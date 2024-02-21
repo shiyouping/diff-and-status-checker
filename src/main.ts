@@ -64,8 +64,7 @@ export const run = async (): Promise<void> => {
     let hasChanges: boolean
 
     if (!latestPassedCommitSha) {
-      // This PR has no previous checks
-      // check if the whole branch has changes
+      core.info('No passed checks detected in the past')
       hasChanges = await hasDiff(baseBranch, currentBranch, filters)
       core.info(
         `Diff between ${baseBranch} and ${currentBranch}: ${hasChanges}`

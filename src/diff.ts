@@ -5,11 +5,11 @@ const executeCommand = async (
   command: string,
   args: string[]
 ): Promise<string> => {
-  core.startGroup(`Starting execute command: ${command}`)
+  core.startGroup(`Execute command: ${command}`)
   let output = ''
 
   try {
-    core.info(`Executing command: ${command}, args: ${JSON.stringify(args)}`)
+    core.info(`Command: ${command}, args: ${JSON.stringify(args)}`)
     output = (await getExecOutput(command, args)).stdout
   } finally {
     core.info('')
@@ -30,7 +30,8 @@ export const hasDiff = async (
     '--no-renames',
     '--name-status',
     '-z',
-    `${baseRef}..${headRef}`
+    baseRef,
+    headRef
   ])
 
   return true
