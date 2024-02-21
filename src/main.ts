@@ -1,11 +1,12 @@
-const core = require('@actions/core')
-const { listCommits } = require('./commit')
+import { listCommits } from 'src/commit'
+
+import * as core from '@actions/core'
 
 /**
  * The main function for the action.
  * @returns {Promise<void>} Resolves when the action is complete.
  */
-async function run() {
+const run = async (): Promise<void> => {
   try {
     const token = core.getInput('token')
     const commits = await listCommits(token)
@@ -21,10 +22,10 @@ async function run() {
 
     core.setOutput('hasDiff', 'true')
   } catch (error) {
-    core.setFailed(error.message)
+    if (error instanceof Error) {
+      core.setFailed(error.message)
+    }
   }
 }
 
-module.exports = {
-  run
-}
+export { run }
