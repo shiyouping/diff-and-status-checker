@@ -11017,7 +11017,8 @@ const hasDiff = async (baseRef, headRef, filter) => {
         '--no-renames',
         '--name-status',
         '-z',
-        `${baseRef}..${headRef}`
+        baseRef,
+        headRef
     ]);
     return true;
 };
