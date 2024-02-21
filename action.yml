@@ -9,6 +9,12 @@ inputs:
     description: 'GitHub token'
     default: ${{ github.token }}
     required: false
+  filters:
+    description:
+      'An array of filters to apply to the diff. If any of the filters match,
+      the action will return `hasDiff: true`'
+    default: ''
+    required: false
 
 outputs:
   hasDiff:

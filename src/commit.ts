@@ -1,3 +1,4 @@
+import * as core from '@actions/core'
 import { context, getOctokit } from '@actions/github'
 import * as octokitPlugin from '@octokit/plugin-rest-endpoint-methods'
 
@@ -10,6 +11,9 @@ export const listCommits = async (
   const { owner, repo } = context.repo
   const pull_number = context.payload.number
 
+  core.debug(
+    `Listing commits for owner=${owner}, repo=${repo}, pull_number=${pull_number}`
+  )
   const res = await octokit.rest.pulls.listCommits({
     owner,
     repo,
