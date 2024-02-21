@@ -2722,11 +2722,33 @@ exports["default"] = _default;
 
 /***/ }),
 
+/***/ 254:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+const github = __nccwpck_require__(716)
+
+async function listCommits(token) {
+  const octokit = github.getOctokit(token)
+  const { owner, repo, pull_number } = github.context.issue
+  return await octokit.rest.pulls.listCommits({
+    owner,
+    repo,
+    pull_number
+  })
+}
+
+module.exports = {
+  listCommits
+}
+
+
+/***/ }),
+
 /***/ 713:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 const core = __nccwpck_require__(186)
-const listCommits = __nccwpck_require__(58)
+const { listCommits } = __nccwpck_require__(254)
 
 /**
  * The main function for the action.
@@ -2754,10 +2776,10 @@ module.exports = {
 
 /***/ }),
 
-/***/ 58:
+/***/ 716:
 /***/ ((module) => {
 
-module.exports = eval("require")(".listCommits.js");
+module.exports = eval("require")("@actions/github");
 
 
 /***/ }),
