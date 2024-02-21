@@ -19,7 +19,7 @@ const executeCommand = async (
   // FIXME: update log level
   core.info(`Execution output: ${output}`)
 
-  const diff = output.split('\u0000').filter(path => path.length > 0)
+  const diff = output.split('\n').filter(path => path.trim().length > 0)
   // FIXME: update log level
   core.info(`Diff: ${JSON.stringify(diff)}`)
   return diff
@@ -30,14 +30,7 @@ export const hasDiff = async (
   headRef: string,
   filter: string[]
 ): Promise<boolean> => {
-  await executeCommand('git', [
-    'diff',
-    '--no-renames',
-    '--name-status',
-    '-z',
-    baseRef,
-    headRef
-  ])
+  await executeCommand('git', ['diff', '--name-only', baseRef, headRef])
 
   return true
 }
