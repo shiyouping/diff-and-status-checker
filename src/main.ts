@@ -22,7 +22,8 @@ const checkEvent = (eventName: string): void => {
 
 const getFilters = (raw: string): string[] => {
   const filters = raw.split('\n').filter(filter => filter.trim() !== '')
-  core.debug(`Filters: ${JSON.stringify(filters)}`)
+  // FIXME: update log level
+  core.info(`Filters: ${JSON.stringify(filters)}`)
   return filters
 }
 

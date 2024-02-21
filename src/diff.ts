@@ -4,7 +4,7 @@ import { getExecOutput } from '@actions/exec'
 const executeCommand = async (
   command: string,
   args: string[]
-): Promise<string> => {
+): Promise<string[]> => {
   core.startGroup(`Execute command: ${command}`)
   let output = ''
 
@@ -16,8 +16,13 @@ const executeCommand = async (
     core.endGroup()
   }
 
+  // FIXME: update log level
   core.info(`Execution output: ${output}`)
-  return output
+
+  const diff = output.split('\u0000').filter(path => path.length > 0)
+  // FIXME: update log level
+  core.info(`Diff: ${JSON.stringify(diff)}`)
+  return diff
 }
 
 export const hasDiff = async (

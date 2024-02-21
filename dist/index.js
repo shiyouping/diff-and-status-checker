@@ -11008,8 +11008,12 @@ const executeCommand = async (command, args) => {
         core.info('');
         core.endGroup();
     }
+    // FIXME: update log level
     core.info(`Execution output: ${output}`);
-    return output;
+    const diff = output.split('\u0000').filter(path => path.length > 0);
+    // FIXME: update log level
+    core.info(`Diff: ${JSON.stringify(diff)}`);
+    return diff;
 };
 const hasDiff = async (baseRef, headRef, filter) => {
     await executeCommand('git', [
@@ -11076,7 +11080,8 @@ const checkEvent = (eventName) => {
 };
 const getFilters = (raw) => {
     const filters = raw.split('\n').filter(filter => filter.trim() !== '');
-    core.debug(`Filters: ${JSON.stringify(filters)}`);
+    // FIXME: update log level
+    core.info(`Filters: ${JSON.stringify(filters)}`);
     return filters;
 };
 /**
