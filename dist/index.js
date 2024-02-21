@@ -28971,6 +28971,8 @@ async function run() {
     const commits = await listCommits(token)
 
     console.log('*********************************')
+    console.log(JSON.stringify(commits))
+
     for (const commit of commits) {
       console.log('Printing commit...')
       console.log(JSON.stringify(commit))
