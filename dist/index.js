@@ -7050,7 +7050,7 @@ Object.defineProperty(exports, "parse", ({
 
 var _v = _interopRequireDefault(__nccwpck_require__(8628));
 
-var _v2 = _interopRequireDefault(__nccwpck_require__(6409));
+var _v2 = _interopRequireDefault(__nccwpck_require__(9093));
 
 var _v3 = _interopRequireDefault(__nccwpck_require__(5122));
 
@@ -7403,7 +7403,7 @@ exports["default"] = _default;
 
 /***/ }),
 
-/***/ 6409:
+/***/ 9093:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 "use strict";
@@ -9631,6 +9631,31 @@ function wrappy (fn, cb) {
 
 /***/ }),
 
+/***/ 6409:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.allChecksPassed = void 0;
+const github_1 = __nccwpck_require__(5438);
+const allChecksPassed = async (ref, token) => {
+    const octokit = (0, github_1.getOctokit)(token);
+    const { owner, repo } = github_1.context.repo;
+    const res = await octokit.rest.checks.listForRef({ owner, repo, ref });
+    if (!res?.data?.check_runs?.length) {
+        // No checks for this ref
+        return false;
+    }
+    console.log('check ********************************');
+    console.log(JSON.stringify(res));
+    return false;
+};
+exports.allChecksPassed = allChecksPassed;
+
+
+/***/ }),
+
 /***/ 1730:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
@@ -9648,7 +9673,7 @@ const listCommits = async (token) => {
         repo,
         pull_number
     });
-    if (!res.data || res.data.length === 0) {
+    if (!res?.data?.length) {
         throw new Error(`No commits found for owner=${owner}, repo=${repo}, pull_number=${pull_number}`);
     }
     return res.data;
@@ -9688,22 +9713,34 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.run = void 0;
+const check_1 = __nccwpck_require__(6409);
 const commit_1 = __nccwpck_require__(1730);
 const core = __importStar(__nccwpck_require__(2186));
+const github_1 = __nccwpck_require__(5438);
+const checkEvent = (eventName) => {
+    const pullRequestEvents = [
+        'pull_request',
+        'pull_request_review',
+        'pull_request_review_comment',
+        'pull_request_target'
+    ];
+    if (!pullRequestEvents.includes(eventName)) {
+        throw new Error(`${eventName} is not a valid event.`);
+    }
+};
 /**
  * The main function for the action.
  * @returns {Promise<void>} Resolves when the action is complete.
  */
 const run = async () => {
+    checkEvent(github_1.context.eventName);
     try {
         const token = core.getInput('token');
         const commits = await (0, commit_1.listCommits)(token);
         console.log('*********************************');
         console.log(JSON.stringify(commits));
         for (const commit of commits) {
-            console.log('Printing commit...');
-            console.log(JSON.stringify(commit));
-            console.log('*********************************');
+            await (0, check_1.allChecksPassed)(commit.sha, token);
         }
         core.setOutput('hasDiff', 'true');
     }

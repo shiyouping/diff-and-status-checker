@@ -1,7 +1,7 @@
 import { context, getOctokit } from '@actions/github'
 import * as octokitPlugin from '@octokit/plugin-rest-endpoint-methods'
 
-const listCommits = async (
+export const listCommits = async (
   token: string
 ): Promise<
   octokitPlugin.RestEndpointMethodTypes['pulls']['listCommits']['response']['data']
@@ -16,7 +16,7 @@ const listCommits = async (
     pull_number
   })
 
-  if (!res.data || res.data.length === 0) {
+  if (!res?.data?.length) {
     throw new Error(
       `No commits found for owner=${owner}, repo=${repo}, pull_number=${pull_number}`
     )
@@ -24,5 +24,3 @@ const listCommits = async (
 
   return res.data
 }
-
-export { listCommits }
