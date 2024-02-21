@@ -10,8 +10,11 @@ async function run() {
     const token = core.getInput('token')
     const commits = await listCommits(token)
 
+    console.log('*********************************')
     for (const commit of commits) {
+      console.log('Printing commit...')
       console.log(JSON.stringify(commit))
+      console.log('*********************************')
     }
 
     core.setOutput('hasDiff', 'true')

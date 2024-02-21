@@ -28935,9 +28935,13 @@ function wrappy (fn, cb) {
 const github = __nccwpck_require__(5438)
 
 async function listCommits(token) {
+  console.log('*********************************')
+  console.log('Listing commits...')
+
   const octokit = github.getOctokit(token)
   const { owner, repo, pull_number } = github.context.issue
 
+  console.log('Printing github.context...')
   console.log(JSON.stringify(github.context))
 
   return await octokit.rest.pulls.listCommits({
@@ -28969,8 +28973,11 @@ async function run() {
     const token = core.getInput('token')
     const commits = await listCommits(token)
 
+    console.log('*********************************')
     for (const commit of commits) {
+      console.log('Printing commit...')
       console.log(JSON.stringify(commit))
+      console.log('*********************************')
     }
 
     core.setOutput('hasDiff', 'true')
