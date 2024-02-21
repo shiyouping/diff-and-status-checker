@@ -52,7 +52,7 @@ export const run = async (): Promise<void> => {
 
     for (const commit of commits) {
       const allPassed = await allChecksPassed(commit.sha, token)
-      core.info(`Commit ${commit.sha} has all checks passed: ${allPassed}`)
+      core.debug(`Commit ${commit.sha} has all checks passed: ${allPassed}`)
 
       if (allPassed) {
         // This is the most recent commit that passed all checks

@@ -10998,10 +10998,10 @@ exports.hasDiff = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const exec_1 = __nccwpck_require__(1514);
 const executeCommand = async (command, args) => {
-    core.startGroup(`Starting execute command: ${command}`);
+    core.startGroup(`Execute command: ${command}`);
     let output = '';
     try {
-        core.info(`Executing command: ${command}, args: ${JSON.stringify(args)}`);
+        core.info(`Command: ${command}, args: ${JSON.stringify(args)}`);
         output = (await (0, exec_1.getExecOutput)(command, args)).stdout;
     }
     finally {
@@ -11017,7 +11017,8 @@ const hasDiff = async (baseRef, headRef, filter) => {
         '--no-renames',
         '--name-status',
         '-z',
-        `${baseRef}..${headRef}`
+        baseRef,
+        headRef
     ]);
     return true;
 };
@@ -11098,7 +11099,7 @@ const run = async () => {
         let latestPassedCommitSha = undefined;
         for (const commit of commits) {
             const allPassed = await (0, check_1.allChecksPassed)(commit.sha, token);
-            core.info(`Commit ${commit.sha} has all checks passed: ${allPassed}`);
+            core.debug(`Commit ${commit.sha} has all checks passed: ${allPassed}`);
             if (allPassed) {
                 // This is the most recent commit that passed all checks
                 latestPassedCommitSha = commit.sha;
@@ -11107,8 +11108,7 @@ const run = async () => {
         }
         let hasChanges;
         if (!latestPassedCommitSha) {
-            // This PR has no previous checks
-            // check if the whole branch has changes
+            core.info('No passed checks detected in the past');
             hasChanges = await (0, diff_1.hasDiff)(baseBranch, currentBranch, filters);
             core.info(`Diff between ${baseBranch} and ${currentBranch}: ${hasChanges}`);
             core.setOutput('hasDiff', hasChanges ? 'true' : 'false');
