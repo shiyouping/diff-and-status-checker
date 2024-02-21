@@ -50,10 +50,18 @@ jobs:
       - name: Checkout
         id: checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Test Local Action
         id: test-action
         uses: ./
+        with:
+          filters: |
+            badges
+            dist
+            script
+            src
 
       - name: Print Output
         id: output
