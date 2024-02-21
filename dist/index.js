@@ -10998,10 +10998,9 @@ exports.hasDiff = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const exec_1 = __nccwpck_require__(1514);
 const getDiff = async (baseRef, headRef) => {
-    core.startGroup('Getting diff');
+    core.startGroup('Getting diff...');
     let output = '';
     try {
-        core.info(`git diff --name-only ${baseRef} ${headRef}`);
         output = (await (0, exec_1.getExecOutput)('git', ['diff', '--name-only', baseRef, headRef])).stdout;
     }
     finally {
@@ -11078,9 +11077,13 @@ const checkEvent = (eventName) => {
 };
 const getFilters = (raw) => {
     const filters = raw.split('\n').filter(filter => filter.trim() !== '');
-    // FIXME: update log level
-    core.info(`Filters: ${JSON.stringify(filters)}`);
+    core.debug(`Filters: ${JSON.stringify(filters)}`);
     return filters;
+};
+const writeOutput = (hasDiff) => {
+    const result = hasDiff ? 'true' : 'false';
+    core.setOutput('hasDiff', result);
+    core.info(`Wrote output. hasDiff: ${result}`);
 };
 /**
  * The main function for the action.
@@ -11117,12 +11120,12 @@ const run = async () => {
             core.info('No passed checks detected in the past');
             hasChanges = await (0, diff_1.hasDiff)(baseSha, headSha, filters);
             core.info(`Diff between ${baseSha} and ${headSha}: ${hasChanges}`);
-            core.setOutput('hasDiff', hasChanges ? 'true' : 'false');
+            writeOutput(hasChanges);
             return;
         }
         hasChanges = await (0, diff_1.hasDiff)(latestPassedCommitSha, headSha, filters);
         core.info(`Diff between ${latestPassedCommitSha} and ${headSha}: ${hasChanges}`);
-        core.setOutput('hasDiff', 'true');
+        writeOutput(hasChanges);
     }
     catch (error) {
         if (error instanceof Error) {

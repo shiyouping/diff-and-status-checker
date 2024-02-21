@@ -2,11 +2,10 @@ import * as core from '@actions/core'
 import { getExecOutput } from '@actions/exec'
 
 const getDiff = async (baseRef: string, headRef: string): Promise<string[]> => {
-  core.startGroup('Getting diff')
+  core.startGroup('Getting diff...')
   let output = ''
 
   try {
-    core.info(`git diff --name-only ${baseRef} ${headRef}`)
     output = (
       await getExecOutput('git', ['diff', '--name-only', baseRef, headRef])
     ).stdout
