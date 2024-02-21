@@ -30,8 +30,7 @@ export const hasDiff = async (
     '--no-renames',
     '--name-status',
     '-z',
-    baseRef,
-    headRef
+    `${baseRef}..${headRef}`
   ])
 
   return true

@@ -10949,7 +10949,7 @@ const listCommits = async (token) => {
     const octokit = (0, github_1.getOctokit)(token);
     const { owner, repo } = github_1.context.repo;
     const pull_number = github_1.context.payload.number;
-    core.debug(`Listing commits for owner=${owner}, repo=${repo}, pull_number=${pull_number}`);
+    core.debug(`Listing commits for owner: ${owner}, repo: ${repo}, pull_number: ${pull_number}`);
     const res = await octokit.rest.pulls.listCommits({
         owner,
         repo,
@@ -11017,8 +11017,7 @@ const hasDiff = async (baseRef, headRef, filter) => {
         '--no-renames',
         '--name-status',
         '-z',
-        baseRef,
-        headRef
+        `${baseRef}..${headRef}`
     ]);
     return true;
 };
@@ -11087,15 +11086,18 @@ const run = async () => {
     checkEvent(github_1.context.eventName);
     const baseBranch = github_1.context.payload.pull_request?.base?.ref;
     core.debug(`Base branch: ${baseBranch}`);
-    const currentBranch = github_1.context.payload.pull_request?.head?.ref;
-    core.debug(`Current branch: ${currentBranch}`);
+    const baseSha = github_1.context.payload.pull_request?.base?.sha;
+    core.debug(`Base SHA: ${baseSha}`);
+    const headBranch = github_1.context.payload.pull_request?.head?.ref;
+    core.debug(`headBranch branch: ${headBranch}`);
+    const headSha = github_1.context.payload.pull_request?.head?.sha;
+    core.debug(`headSha branch: ${headSha}`);
     try {
         const token = core.getInput('token', { required: false });
         const filters = getFilters(core.getInput('filters', { required: false }));
         const commits = await (0, commit_1.listCommits)(token);
         // Start from the most recent commit
         commits.reverse();
-        const latestCommitSha = commits[0].sha;
         let latestPassedCommitSha = undefined;
         for (const commit of commits) {
             const allPassed = await (0, check_1.allChecksPassed)(commit.sha, token);
@@ -11109,13 +11111,13 @@ const run = async () => {
         let hasChanges;
         if (!latestPassedCommitSha) {
             core.info('No passed checks detected in the past');
-            hasChanges = await (0, diff_1.hasDiff)(baseBranch, currentBranch, filters);
-            core.info(`Diff between ${baseBranch} and ${currentBranch}: ${hasChanges}`);
+            hasChanges = await (0, diff_1.hasDiff)(baseSha, headSha, filters);
+            core.info(`Diff between ${baseSha} and ${headSha}: ${hasChanges}`);
             core.setOutput('hasDiff', hasChanges ? 'true' : 'false');
             return;
         }
-        hasChanges = await (0, diff_1.hasDiff)(latestPassedCommitSha, latestCommitSha, filters);
-        core.info(`Diff between ${latestPassedCommitSha} and ${latestCommitSha}: ${hasChanges}`);
+        hasChanges = await (0, diff_1.hasDiff)(latestPassedCommitSha, headSha, filters);
+        core.info(`Diff between ${latestPassedCommitSha} and ${headSha}: ${hasChanges}`);
         core.setOutput('hasDiff', 'true');
     }
     catch (error) {

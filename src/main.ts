@@ -36,8 +36,14 @@ export const run = async (): Promise<void> => {
   const baseBranch = context.payload.pull_request?.base?.ref
   core.debug(`Base branch: ${baseBranch}`)
 
-  const currentBranch = context.payload.pull_request?.head?.ref
-  core.debug(`Current branch: ${currentBranch}`)
+  const baseSha = context.payload.pull_request?.base?.sha
+  core.debug(`Base SHA: ${baseSha}`)
+
+  const headBranch = context.payload.pull_request?.head?.ref
+  core.debug(`headBranch branch: ${headBranch}`)
+
+  const headSha = context.payload.pull_request?.head?.sha
+  core.debug(`headSha branch: ${headSha}`)
 
   try {
     const token = core.getInput('token', { required: false })
@@ -47,7 +53,6 @@ export const run = async (): Promise<void> => {
 
     // Start from the most recent commit
     commits.reverse()
-    const latestCommitSha = commits[0].sha
     let latestPassedCommitSha: string | undefined = undefined
 
     for (const commit of commits) {
@@ -65,18 +70,17 @@ export const run = async (): Promise<void> => {
 
     if (!latestPassedCommitSha) {
       core.info('No passed checks detected in the past')
-      hasChanges = await hasDiff(baseBranch, currentBranch, filters)
-      core.info(
-        `Diff between ${baseBranch} and ${currentBranch}: ${hasChanges}`
-      )
+
+      hasChanges = await hasDiff(baseSha, headSha, filters)
+      core.info(`Diff between ${baseSha} and ${headSha}: ${hasChanges}`)
 
       core.setOutput('hasDiff', hasChanges ? 'true' : 'false')
       return
     }
 
-    hasChanges = await hasDiff(latestPassedCommitSha, latestCommitSha, filters)
+    hasChanges = await hasDiff(latestPassedCommitSha, headSha, filters)
     core.info(
-      `Diff between ${latestPassedCommitSha} and ${latestCommitSha}: ${hasChanges}`
+      `Diff between ${latestPassedCommitSha} and ${headSha}: ${hasChanges}`
     )
     core.setOutput('hasDiff', 'true')
   } catch (error) {
