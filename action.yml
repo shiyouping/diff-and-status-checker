@@ -1,19 +1,20 @@
-name: 'The name of your action here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'Diff and Status Checker'
+description:
+  'A GitHub action to check if there are any differences in the current branch
+  since the last success check'
+author: 'Ricky Shi <ricky.shiyouping@gmail.com>'
 
-# Define your inputs here.
 inputs:
-  milliseconds:
-    description: 'Your input description here'
-    required: true
-    default: '1000'
+  token:
+    description: 'GitHub token'
+    required: false
 
-# Define your outputs here.
 outputs:
-  time:
-    description: 'Your output description here'
+  hasDiff:
+    description:
+      'Indicate if there are any differences in the current branch since the
+      last success check'
 
 runs:
-  using: node20
+  using: node16
   main: dist/index.js
