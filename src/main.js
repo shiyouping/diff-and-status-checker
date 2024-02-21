@@ -1,5 +1,5 @@
 const core = require('@actions/core')
-const listCommits = require('./commit')
+const { listCommits } = require('./commit')
 
 /**
  * The main function for the action.
