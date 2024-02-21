@@ -54,8 +54,6 @@ jobs:
       - name: Test Local Action
         id: test-action
         uses: ./
-        with:
-          milliseconds: 1000
 
       - name: Print Output
         id: output
