@@ -10997,27 +10997,32 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.hasDiff = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const exec_1 = __nccwpck_require__(1514);
-const executeCommand = async (command, args) => {
-    core.startGroup(`Execute command: ${command}`);
+const getDiff = async (baseRef, headRef) => {
+    core.startGroup('Getting diff');
     let output = '';
     try {
-        core.info(`Command: ${command}, args: ${JSON.stringify(args)}`);
-        output = (await (0, exec_1.getExecOutput)(command, args)).stdout;
+        core.info(`git diff --name-only ${baseRef} ${headRef}`);
+        output = (await (0, exec_1.getExecOutput)('git', ['diff', '--name-only', baseRef, headRef])).stdout;
     }
     finally {
         core.info('');
         core.endGroup();
     }
-    // FIXME: update log level
-    core.info(`Execution output: ${output}`);
+    core.debug(`Execution output: ${output}`);
     const diff = output.split('\n').filter(path => path.trim().length > 0);
-    // FIXME: update log level
-    core.info(`Diff: ${JSON.stringify(diff)}`);
+    core.debug(`Diff: ${JSON.stringify(diff)}`);
     return diff;
 };
-const hasDiff = async (baseRef, headRef, filter) => {
-    await executeCommand('git', ['diff', '--name-only', baseRef, headRef]);
-    return true;
+const hasDiff = async (baseRef, headRef, filters) => {
+    const diff = await getDiff(baseRef, headRef);
+    for (const filter of filters) {
+        const included = diff.some(d => d.includes(filter));
+        core.info(`Filter: ${filter} is included in diff: ${included}`);
+        if (included) {
+            return true;
+        }
+    }
+    return false;
 };
 exports.hasDiff = hasDiff;
 

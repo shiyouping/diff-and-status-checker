@@ -1,36 +1,42 @@
 import * as core from '@actions/core'
 import { getExecOutput } from '@actions/exec'
 
-const executeCommand = async (
-  command: string,
-  args: string[]
-): Promise<string[]> => {
-  core.startGroup(`Execute command: ${command}`)
+const getDiff = async (baseRef: string, headRef: string): Promise<string[]> => {
+  core.startGroup('Getting diff')
   let output = ''
 
   try {
-    core.info(`Command: ${command}, args: ${JSON.stringify(args)}`)
-    output = (await getExecOutput(command, args)).stdout
+    core.info(`git diff --name-only ${baseRef} ${headRef}`)
+    output = (
+      await getExecOutput('git', ['diff', '--name-only', baseRef, headRef])
+    ).stdout
   } finally {
     core.info('')
     core.endGroup()
   }
 
-  // FIXME: update log level
-  core.info(`Execution output: ${output}`)
+  core.debug(`Execution output: ${output}`)
 
   const diff = output.split('\n').filter(path => path.trim().length > 0)
-  // FIXME: update log level
-  core.info(`Diff: ${JSON.stringify(diff)}`)
+  core.debug(`Diff: ${JSON.stringify(diff)}`)
+
   return diff
 }
 
 export const hasDiff = async (
   baseRef: string,
   headRef: string,
-  filter: string[]
+  filters: string[]
 ): Promise<boolean> => {
-  await executeCommand('git', ['diff', '--name-only', baseRef, headRef])
+  const diff = await getDiff(baseRef, headRef)
+  for (const filter of filters) {
+    const included = diff.some(d => d.includes(filter))
+    core.info(`Filter: ${filter} is included in diff: ${included}`)
 
-  return true
+    if (included) {
+      return true
+    }
+  }
+
+  return false
 }
