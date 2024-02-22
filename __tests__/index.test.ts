@@ -1,3 +1,3 @@
-describe('index', () => {
-  it('calls run when imported', () => {})
-})
+describe("index", () => {
+  it("calls run when imported", () => {});
+});

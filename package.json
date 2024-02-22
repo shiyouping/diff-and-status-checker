@@ -23,16 +23,15 @@
     ".": "./dist/index.js"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "scripts": {
     "all": "npm run format:write && npm run lint && npm run test && npm run coverage && npm run package",
     "bundle": "npm run format:write && npm run package",
-    "ci-test": "jest",
     "coverage": "make-coverage-badge --output-path ./badges/coverage.svg",
     "format:check": "prettier --check **/*.ts",
     "format:write": "prettier --write **/*.ts",
-    "lint": "npx eslint . -c ./.github/linters/.eslintrc.yml",
+    "lint": "eslint . --ext .ts,.js",
     "package": "ncc build src/index.ts --license licenses.txt",
     "package:watch": "npm run package -- --watch",
     "test": "jest"
@@ -44,7 +43,6 @@
     "picomatch": "^4.0.1"
   },
   "devDependencies": {
-    "@babel/eslint-parser": "^7.23.10",
     "@types/jest": "^29.5.12",
     "@types/node": "^20.11.19",
     "@types/picomatch": "^2.3.3",
