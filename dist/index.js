@@ -13068,7 +13068,7 @@ const allChecksPassed = async (ref) => {
 const findLastChecksPassedSha = async (shas, defaultSha) => {
     for (const sha of shas) {
         const allPassed = await allChecksPassed(sha);
-        core.info(`Commit ${sha} has all checks passed: ${allPassed}`);
+        core.info(`Commit ${sha} has specified checks passed: ${allPassed}`);
         if (allPassed) {
             // This is the most recent commit that passed all checks
             return sha;

@@ -58,7 +58,7 @@ jobs:
         uses: ./
         with:
           includeJobs: |
-            GitHub Actions Test
+            GitHub Actions Test helloworld
           # excludeJobs: |
           #   GitHub Actions Test
           #   JavaScript Tests
