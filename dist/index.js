@@ -10892,11 +10892,12 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.allChecksPassed = void 0;
+const context_1 = __nccwpck_require__(8954);
 const core = __importStar(__nccwpck_require__(2186));
 const github_1 = __nccwpck_require__(5438);
-const allChecksPassed = async (ref, token) => {
+const allChecksPassed = async (ref) => {
+    const { owner, repo, token } = context_1.context;
     const octokit = (0, github_1.getOctokit)(token);
-    const { owner, repo } = github_1.context.repo;
     core.debug(`Getting checks for owner: ${owner}, repo: ${repo} and ref: ${ref}`);
     const res = await octokit.rest.checks.listForRef({ owner, repo, ref });
     if (!res?.data?.check_runs?.length) {
@@ -10904,8 +10905,10 @@ const allChecksPassed = async (ref, token) => {
         core.debug(`No checks for owner: ${owner}, repo: ${repo} and ref: ${ref}`);
         return false;
     }
-    return res.data.check_runs.every(checkRun => checkRun.conclusion === 'success' ||
-        checkRun.conclusion === 'neutral' ||
+    // TODO: Add job's name check
+    // checkRun.name === specifiedJobName
+    return res.data.check_runs.every(checkRun => checkRun.conclusion === 'neutral' ||
+        checkRun.conclusion === 'success' ||
         checkRun.conclusion === 'skipped');
 };
 exports.allChecksPassed = allChecksPassed;
@@ -10943,24 +10946,77 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.listCommits = void 0;
+const context_1 = __nccwpck_require__(8954);
 const core = __importStar(__nccwpck_require__(2186));
 const github_1 = __nccwpck_require__(5438);
-const listCommits = async (token) => {
+const listCommits = async () => {
+    const { owner, repo, pullNumber, token } = context_1.context;
     const octokit = (0, github_1.getOctokit)(token);
-    const { owner, repo } = github_1.context.repo;
-    const pull_number = github_1.context.payload.number;
-    core.debug(`Listing commits for owner: ${owner}, repo: ${repo}, pull_number: ${pull_number}`);
+    core.debug(`Listing commits for owner: ${owner}, repo: ${repo}, pullNumber: ${pullNumber}`);
     const res = await octokit.rest.pulls.listCommits({
         owner,
         repo,
-        pull_number
+        pull_number: pullNumber
     });
     if (!res?.data?.length) {
-        throw new Error(`No commits found for owner=${owner}, repo=${repo}, pull_number=${pull_number}`);
+        throw new Error(`No commits found for owner: ${owner}, repo: ${repo}, pullNumber: ${pullNumber}`);
     }
     return res.data;
 };
 exports.listCommits = listCommits;
+
+
+/***/ }),
+
+/***/ 8954:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.context = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+const github = __importStar(__nccwpck_require__(5438));
+const getFilters = (raw) => {
+    const filters = raw.split('\n').filter(filter => filter.trim() !== '');
+    core.debug(`Filters: ${JSON.stringify(filters)}`);
+    return filters;
+};
+const context = {
+    eventName: github.context.eventName,
+    baseSha: github.context.payload.pull_request?.base?.sha,
+    headSha: github.context.payload.pull_request?.head?.sha,
+    pullNumber: github.context.payload.number,
+    owner: github.context.repo.owner,
+    repo: github.context.repo.repo,
+    token: core.getInput('token', { required: false }),
+    filters: getFilters(core.getInput('filters', { required: false }))
+};
+exports.context = context;
+core.info(`Context: ${JSON.stringify(context)}`);
 
 
 /***/ }),
@@ -10997,11 +11053,11 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.hasDiff = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const exec_1 = __nccwpck_require__(1514);
-const getDiff = async (baseRef, headRef) => {
-    core.startGroup('Getting diff...');
+const getDiff = async (baseSha, headSha) => {
+    core.startGroup('Getting Git diff...');
     let output = '';
     try {
-        output = (await (0, exec_1.getExecOutput)('git', ['diff', '--name-only', baseRef, headRef])).stdout;
+        output = (await (0, exec_1.getExecOutput)('git', ['diff', '--name-only', baseSha, headSha])).stdout;
     }
     finally {
         core.info('');
@@ -11012,15 +11068,18 @@ const getDiff = async (baseRef, headRef) => {
     core.debug(`Diff: ${JSON.stringify(diff)}`);
     return diff;
 };
-const hasDiff = async (baseRef, headRef, filters) => {
-    const diff = await getDiff(baseRef, headRef);
+const hasDiff = async (baseSha, headSha, filters) => {
+    const diff = await getDiff(baseSha, headSha);
     for (const filter of filters) {
+        // TODO enhance this match
         const included = diff.some(d => d.includes(filter));
         core.info(`Filter: ${filter} is included in diff: ${included}`);
         if (included) {
+            core.info(`Diff between ${baseSha} and ${headSha} is true`);
             return true;
         }
     }
+    core.info(`Diff between ${baseSha} and ${headSha} is false`);
     return false;
 };
 exports.hasDiff = hasDiff;
@@ -11060,25 +11119,19 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.run = void 0;
 const check_1 = __nccwpck_require__(6409);
 const commit_1 = __nccwpck_require__(1730);
+const context_1 = __nccwpck_require__(8954);
 const diff_1 = __nccwpck_require__(4275);
 const core = __importStar(__nccwpck_require__(2186));
-const github_1 = __nccwpck_require__(5438);
 const checkEvent = (eventName) => {
-    core.debug(`Triggered eventName: ${eventName}`);
-    const pullRequestEvents = [
+    const validEvents = [
         'pull_request',
         'pull_request_review',
         'pull_request_review_comment',
         'pull_request_target'
     ];
-    if (!pullRequestEvents.includes(eventName)) {
+    if (!validEvents.includes(eventName)) {
         throw new Error(`${eventName} is not a valid event.`);
     }
-};
-const getFilters = (raw) => {
-    const filters = raw.split('\n').filter(filter => filter.trim() !== '');
-    core.debug(`Filters: ${JSON.stringify(filters)}`);
-    return filters;
 };
 const writeOutput = (hasDiff) => {
     const result = hasDiff ? 'true' : 'false';
@@ -11090,25 +11143,16 @@ const writeOutput = (hasDiff) => {
  * @returns {Promise<void>} Resolves when the action is complete.
  */
 const run = async () => {
-    checkEvent(github_1.context.eventName);
-    const baseBranch = github_1.context.payload.pull_request?.base?.ref;
-    core.debug(`Base branch: ${baseBranch}`);
-    const baseSha = github_1.context.payload.pull_request?.base?.sha;
-    core.debug(`Base SHA: ${baseSha}`);
-    const headBranch = github_1.context.payload.pull_request?.head?.ref;
-    core.debug(`headBranch branch: ${headBranch}`);
-    const headSha = github_1.context.payload.pull_request?.head?.sha;
-    core.debug(`headSha branch: ${headSha}`);
+    const { baseSha, headSha, eventName, filters } = context_1.context;
+    checkEvent(eventName);
     try {
-        const token = core.getInput('token', { required: false });
-        const filters = getFilters(core.getInput('filters', { required: false }));
-        const commits = await (0, commit_1.listCommits)(token);
+        const commits = await (0, commit_1.listCommits)();
         // Start from the most recent commit
         commits.reverse();
-        let latestPassedCommitSha = undefined;
+        let latestPassedCommitSha;
         for (const commit of commits) {
-            const allPassed = await (0, check_1.allChecksPassed)(commit.sha, token);
-            core.debug(`Commit ${commit.sha} has all checks passed: ${allPassed}`);
+            const allPassed = await (0, check_1.allChecksPassed)(commit.sha);
+            core.info(`Commit ${commit.sha} has all checks passed: ${allPassed}`);
             if (allPassed) {
                 // This is the most recent commit that passed all checks
                 latestPassedCommitSha = commit.sha;
@@ -11117,14 +11161,13 @@ const run = async () => {
         }
         let hasChanges;
         if (!latestPassedCommitSha) {
-            core.info('No passed checks detected in the past');
+            core.info('No commits that passed checks detected in the past');
             hasChanges = await (0, diff_1.hasDiff)(baseSha, headSha, filters);
-            core.info(`Diff between ${baseSha} and ${headSha}: ${hasChanges}`);
             writeOutput(hasChanges);
             return;
         }
+        core.info('Commit that passed checks detected');
         hasChanges = await (0, diff_1.hasDiff)(latestPassedCommitSha, headSha, filters);
-        core.info(`Diff between ${latestPassedCommitSha} and ${headSha}: ${hasChanges}`);
         writeOutput(hasChanges);
     }
     catch (error) {

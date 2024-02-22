@@ -1,9 +1,10 @@
 {
-  "name": "Diff and Status Checker",
+  "name": "diff-and-status-checker",
   "description": "A GitHub action to check if there are any differences in the current branch since the last specified status",
   "version": "0.0.1",
-  "author": "ricky.shiyouping@gmail.com",
   "private": false,
+  "license": "Apache",
+  "author": "ricky.shiyouping@gmail.com",
   "homepage": "https://github.com/shiyouping/diff-and-status-checker#readme",
   "repository": {
     "type": "git",
@@ -25,46 +26,16 @@
     "node": ">=18"
   },
   "scripts": {
+    "all": "npm run format:write && npm run lint && npm run test && npm run coverage && npm run package",
     "bundle": "npm run format:write && npm run package",
     "ci-test": "jest",
     "coverage": "make-coverage-badge --output-path ./badges/coverage.svg",
-    "format:write": "prettier --write **/*.ts",
     "format:check": "prettier --check **/*.ts",
+    "format:write": "prettier --write **/*.ts",
     "lint": "npx eslint . -c ./.github/linters/.eslintrc.yml",
     "package": "ncc build src/index.ts --license licenses.txt",
     "package:watch": "npm run package -- --watch",
-    "test": "jest",
-    "all": "npm run format:write && npm run lint && npm run test && npm run coverage && npm run package"
-  },
-  "license": "Apache",
-  "jest": {
-    "preset": "ts-jest",
-    "verbose": true,
-    "clearMocks": true,
-    "testEnvironment": "node",
-    "moduleFileExtensions": [
-      "js",
-      "ts"
-    ],
-    "testMatch": [
-      "**/*.test.ts"
-    ],
-    "testPathIgnorePatterns": [
-      "/node_modules/",
-      "/dist/"
-    ],
-    "transform": {
-      "^.+\\.ts$": "ts-jest"
-    },
-    "coverageReporters": [
-      "json-summary",
-      "text",
-      "lcov"
-    ],
-    "collectCoverage": true,
-    "collectCoverageFrom": [
-      "./src/**"
-    ]
+    "test": "jest"
   },
   "dependencies": {
     "@actions/core": "^1.10.1",
@@ -72,6 +43,7 @@
     "@actions/github": "^5.1.1"
   },
   "devDependencies": {
+    "@babel/eslint-parser": "^7.23.10",
     "@types/jest": "^29.5.12",
     "@types/node": "^20.11.19",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
