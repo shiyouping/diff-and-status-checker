@@ -16,9 +16,13 @@
     "target": "ES2022"
   },
   "exclude": [
+    "./__tests__",
+    "./.github",
+    "./badges",
+    "./coverage",
     "./dist",
     "./node_modules",
-    "./__tests__",
-    "./coverage"
+    "./script",
+    "*.json"
   ]
 }
