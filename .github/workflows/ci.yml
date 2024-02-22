@@ -56,6 +56,13 @@ jobs:
       - name: Test Local Action
         id: test-action
         uses: ./
+        with:
+          includeJobs: |
+            'GitHub Actions Test'
+            'JavaScript Tests'
+          excludeJobs: |
+            'GitHub Actions Test'
+            'JavaScript Tests'
 
       - name: Print Output
         id: output
