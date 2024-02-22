@@ -1,12 +1,30 @@
-name: 'Diff and Status Checker'
+name: 'Diff and Status Checker for Pull Request'
 description:
-  'A GitHub action to check if there are any differences in the current branch
-  since the last success check'
+  'A GitHub action to check if there are any differences in the pull request
+  since last passed checks'
 author: 'Ricky Shi <ricky.shiyouping@gmail.com>'
 
 inputs:
   token:
     description: 'GitHub token'
+    default: ${{ github.token }}
+    required: false
+  filters:
+    description:
+      'A list of filters separated by comma or in a new line. If not specified,
+      all changed files will be checked.'
+    required: false
+  includeJobs:
+    description:
+      'A list of GitHub workflow job names separated by comma or in a new line.
+      If not specified, all jobs will be checked. Only one of includeJobs and
+      excludeJobs is allowed.'
+    required: false
+  excludeJobs:
+    description:
+      'A list of GitHub workflow job names separated by comma or in a new line.
+      If not specified, all jobs will be checked. Only one of includeJobs and
+      excludeJobs is allowed.'
     required: false
 
 outputs:
@@ -16,5 +34,5 @@ outputs:
       last success check'
 
 runs:
-  using: node16
+  using: node20
   main: dist/index.js
