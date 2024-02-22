@@ -58,10 +58,8 @@ jobs:
         uses: ./
         with:
           filters: |
-            badges
-            dist
-            script
-            src
+            src/*
+            __tests__/*
 
       - name: Print Output
         id: output

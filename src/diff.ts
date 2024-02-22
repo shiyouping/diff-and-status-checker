@@ -1,5 +1,6 @@
 import * as core from '@actions/core'
 import { getExecOutput } from '@actions/exec'
+import picomatch from 'picomatch'
 
 const getDiff = async (baseSha: string, headSha: string): Promise<string[]> => {
   core.startGroup('Getting Git diff...')
@@ -28,13 +29,16 @@ export const hasDiff = async (
   filters: string[]
 ): Promise<boolean> => {
   const diff = await getDiff(baseSha, headSha)
-  for (const filter of filters) {
-    // TODO enhance this match
-    const included = diff.some(d => d.includes(filter))
-    core.info(`Filter: ${filter} is included in diff: ${included}`)
+  const options = { dot: true }
 
-    if (included) {
-      core.info(`Diff between ${baseSha} and ${headSha} is true`)
+  for (const d of diff) {
+    const matched = picomatch.isMatch(d, filters, options)
+    // FIXME: update log level
+    core.info(
+      `Diff: ${d} is matched in filters ${JSON.stringify(filters)}: ${matched}`
+    )
+
+    if (matched) {
       return true
     }
   }
