@@ -13127,6 +13127,7 @@ const getShas = async () => {
             per_page: 250,
             page
         });
+        core.info(`****** Commits: ${res}`);
         allCommits.push(...res.data);
         page++;
     } while (res.data.length);

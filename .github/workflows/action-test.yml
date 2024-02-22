@@ -20,7 +20,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Test Local Action
+      - name: Test Action
         id: test-action
         uses: ./
 
