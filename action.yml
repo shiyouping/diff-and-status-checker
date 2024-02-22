@@ -11,8 +11,20 @@ inputs:
     required: false
   filters:
     description:
-      'Filters applied to detected changed files and must be separated in a new
-      line. If not specified, all changed files will be checked.'
+      'A list of filters separated by comma or in a new line. If not specified,
+      all changed files will be checked.'
+    required: false
+  includeJobs:
+    description:
+      'A list of GitHub workflow job names separated by comma or in a new line.
+      If not specified, all jobs will be checked. Only one of includeJobs and
+      excludeJobs is allowed.'
+    required: false
+  excludeJobs:
+    description:
+      'A list of GitHub workflow job names separated by comma or in a new line.
+      If not specified, all jobs will be checked. Only one of includeJobs and
+      excludeJobs is allowed.'
     required: false
 
 outputs:

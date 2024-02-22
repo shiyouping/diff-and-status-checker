@@ -13028,8 +13028,14 @@ exports.findLastChecksPassedSha = void 0;
 const context_1 = __nccwpck_require__(8954);
 const core = __importStar(__nccwpck_require__(2186));
 const github_1 = __nccwpck_require__(5438);
+const checkJobs = (includeJobs, excludeJobs) => {
+    if (includeJobs.length > 0 && excludeJobs.length > 0) {
+        throw new Error('Can not have both includeJobs and excludeJobs');
+    }
+};
 const allChecksPassed = async (ref) => {
-    const { owner, repo, token } = context_1.context;
+    const { owner, repo, token, includeJobs, excludeJobs } = context_1.context;
+    checkJobs(includeJobs, excludeJobs);
     const octokit = (0, github_1.getOctokit)(token);
     core.debug(`Getting checks for owner: ${owner}, repo: ${repo} and ref: ${ref}`);
     const res = await octokit.rest.checks.listForRef({ owner, repo, ref });
@@ -13038,9 +13044,24 @@ const allChecksPassed = async (ref) => {
         core.debug(`No checks for owner: ${owner}, repo: ${repo} and ref: ${ref}`);
         return false;
     }
-    // TODO: Add job's name check
-    // checkRun.name === specifiedJobName
-    return res.data.check_runs.every(checkRun => checkRun.conclusion === 'neutral' ||
+    let checkRuns = res.data.check_runs;
+    if (includeJobs.length) {
+        const tmp = checkRuns.filter(checkRun => includeJobs.includes(checkRun.name));
+        if (!tmp.length) {
+            core.info('No check has a job specified by includeJobs');
+            return false;
+        }
+        checkRuns = tmp;
+    }
+    if (excludeJobs.length) {
+        const tmp = checkRuns.filter(checkRun => !excludeJobs.includes(checkRun.name));
+        if (!tmp.length) {
+            core.info('All checks are excluded by excludeJobs');
+            return true;
+        }
+        checkRuns = tmp;
+    }
+    return checkRuns.every(checkRun => checkRun.conclusion === 'neutral' ||
         checkRun.conclusion === 'success' ||
         checkRun.conclusion === 'skipped');
 };
@@ -13159,10 +13180,11 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.context = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
-const getFilters = (raw) => {
-    const filters = raw.split('\n').filter(filter => filter.trim() !== '');
-    core.debug(`Filters: ${JSON.stringify(filters)}`);
-    return filters;
+const parseArray = (raw = '') => {
+    // Separated by comma or in a new line
+    const filtered = raw.split(/[,\n]+/).filter(item => item.trim() !== '');
+    core.debug(`Parsed array: ${JSON.stringify(filtered)}`);
+    return filtered;
 };
 const context = {
     eventName: github.context.eventName,
@@ -13172,7 +13194,9 @@ const context = {
     owner: github.context.repo.owner,
     repo: github.context.repo.repo,
     token: core.getInput('token', { required: false }),
-    filters: getFilters(core.getInput('filters', { required: false }))
+    filters: parseArray(core.getInput('filters', { required: false })),
+    includeJobs: parseArray(core.getInput('includeJobs', { required: false })),
+    excludeJobs: parseArray(core.getInput('excludeJobs', { required: false }))
 };
 exports.context = context;
 core.info(`Context: ${JSON.stringify(context)}`);

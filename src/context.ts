@@ -1,10 +1,11 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 
-const getFilters = (raw: string): string[] => {
-  const filters = raw.split('\n').filter(filter => filter.trim() !== '')
-  core.debug(`Filters: ${JSON.stringify(filters)}`)
-  return filters
+const parseArray = (raw: string = ''): string[] => {
+  // Separated by comma or in a new line
+  const filtered = raw.split(/[,\n]+/).filter(item => item.trim() !== '')
+  core.debug(`Parsed array: ${JSON.stringify(filtered)}`)
+  return filtered
 }
 
 export type Context = {
@@ -16,6 +17,8 @@ export type Context = {
   headSha: string
   token: string
   filters: string[]
+  includeJobs: string[]
+  excludeJobs: string[]
 }
 
 const context: Context = {
@@ -26,7 +29,9 @@ const context: Context = {
   owner: github.context.repo.owner,
   repo: github.context.repo.repo,
   token: core.getInput('token', { required: false }),
-  filters: getFilters(core.getInput('filters', { required: false }))
+  filters: parseArray(core.getInput('filters', { required: false })),
+  includeJobs: parseArray(core.getInput('includeJobs', { required: false })),
+  excludeJobs: parseArray(core.getInput('excludeJobs', { required: false }))
 } as const
 
 core.info(`Context: ${JSON.stringify(context)}`)
