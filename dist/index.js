@@ -13118,13 +13118,13 @@ const getShas = async () => {
     core.debug(`Listing commits for owner: ${owner}, repo: ${repo}, pullNumber: ${pullNumber}`);
     const allCommits = [];
     let res;
-    let page = 0;
+    let page = 1;
     do {
         res = await octokit.rest.pulls.listCommits({
             owner,
             repo,
             pull_number: pullNumber,
-            per_page: 250,
+            per_page: 100,
             page
         });
         core.info(`****** Commits: ${JSON.stringify(res)}`);
