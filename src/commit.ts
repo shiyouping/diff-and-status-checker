@@ -22,7 +22,7 @@ export const getShas = async (): Promise<string[]> => {
       page
     });
 
-    core.info(`****** Commits: ${res}`);
+    core.info(`****** Commits: ${JSON.stringify(res)}`);
 
     allCommits.push(...res.data);
     page++;
