@@ -58,11 +58,10 @@ jobs:
         uses: ./
         with:
           includeJobs: |
-            'GitHub Actions Test'
-            'JavaScript Tests'
-          excludeJobs: |
-            'GitHub Actions Test'
-            'JavaScript Tests'
+            GitHub Actions Test
+          # excludeJobs: |
+          #   GitHub Actions Test
+          #   JavaScript Tests
 
       - name: Print Output
         id: output
