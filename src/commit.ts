@@ -28,7 +28,7 @@ export const listCommits = async (): Promise<
   }
 
   // FIXME
-  core.info(`******************** ${res}`)
+  core.info(`******************** ${JSON.stringify(res)}`)
 
   return res.data
 }

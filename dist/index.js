@@ -13096,7 +13096,7 @@ const listCommits = async () => {
         throw new Error(`No commits found for owner: ${owner}, repo: ${repo}, pullNumber: ${pullNumber}`);
     }
     // FIXME
-    core.info(`******************** ${res}`);
+    core.info(`******************** ${JSON.stringify(res)}`);
     return res.data;
 };
 exports.listCommits = listCommits;
