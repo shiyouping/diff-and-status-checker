@@ -2,11 +2,8 @@ import { context } from 'src/context'
 
 import * as core from '@actions/core'
 import { getOctokit } from '@actions/github'
-import * as plugin from '@octokit/plugin-rest-endpoint-methods'
 
-export const listCommits = async (): Promise<
-  plugin.RestEndpointMethodTypes['pulls']['listCommits']['response']['data']
-> => {
+export const listCommits = async (): Promise<string[]> => {
   const { owner, repo, pullNumber, token } = context
   const octokit = getOctokit(token)
 
@@ -19,14 +16,11 @@ export const listCommits = async (): Promise<
   let page = 0
 
   do {
-    // FIXME
-    core.info(`Page: ${page}`)
-
     res = await octokit.rest.pulls.listCommits({
       owner,
       repo,
       pull_number: pullNumber,
-      per_page: 5,
+      per_page: 250,
       page
     })
 
@@ -40,8 +34,13 @@ export const listCommits = async (): Promise<
     )
   }
 
-  core.info(`****** allCommits: ${JSON.stringify(allCommits)} ******`)
-
   // Start from the most recent commit
-  return allCommits.reverse()
+  const commits = allCommits.map(commit => commit.sha).reverse()
+
+  // Remove the most recent commit, because this is always
+  // the commit that triggers this pull request workflow
+  commits.shift()
+  core.info(`All commit SHAs except the latest one: ${JSON.stringify(commits)}`)
+
+  return commits
 }

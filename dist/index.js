@@ -13090,13 +13090,11 @@ const listCommits = async () => {
     let res;
     let page = 0;
     do {
-        // FIXME
-        core.info(`Page: ${page}`);
         res = await octokit.rest.pulls.listCommits({
             owner,
             repo,
             pull_number: pullNumber,
-            per_page: 5,
+            per_page: 250,
             page
         });
         allCommits.push(...res.data);
@@ -13105,9 +13103,13 @@ const listCommits = async () => {
     if (!allCommits.length) {
         throw new Error(`No commits found for owner: ${owner}, repo: ${repo}, pullNumber: ${pullNumber}`);
     }
-    core.info(`****** allCommits: ${JSON.stringify(allCommits)} ******`);
     // Start from the most recent commit
-    return allCommits.reverse();
+    const commits = allCommits.map(commit => commit.sha).reverse();
+    // Remove the most recent commit, because this is always
+    // the commit that triggers this pull request workflow
+    commits.shift();
+    core.info(`All commit SHAs except the latest one: ${JSON.stringify(commits)}`);
+    return commits;
 };
 exports.listCommits = listCommits;
 
@@ -13299,11 +13301,11 @@ const run = async () => {
         const commits = await (0, commit_1.listCommits)();
         let latestPassedCommitSha;
         for (const commit of commits) {
-            const allPassed = await (0, check_1.allChecksPassed)(commit.sha);
-            core.info(`Commit ${commit.sha} has all checks passed: ${allPassed}`);
+            const allPassed = await (0, check_1.allChecksPassed)(commit);
+            core.info(`Commit ${commit} has all checks passed: ${allPassed}`);
             if (allPassed) {
                 // This is the most recent commit that passed all checks
-                latestPassedCommitSha = commit.sha;
+                latestPassedCommitSha = commit;
                 break;
             }
         }

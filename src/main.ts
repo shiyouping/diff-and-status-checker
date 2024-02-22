@@ -37,12 +37,12 @@ export const run = async (): Promise<void> => {
     let latestPassedCommitSha: string | undefined
 
     for (const commit of commits) {
-      const allPassed = await allChecksPassed(commit.sha)
-      core.info(`Commit ${commit.sha} has all checks passed: ${allPassed}`)
+      const allPassed = await allChecksPassed(commit)
+      core.info(`Commit ${commit} has all checks passed: ${allPassed}`)
 
       if (allPassed) {
         // This is the most recent commit that passed all checks
-        latestPassedCommitSha = commit.sha
+        latestPassedCommitSha = commit
         break
       }
     }
