@@ -13090,8 +13090,11 @@ const listCommits = async () => {
         owner,
         repo,
         pull_number: pullNumber,
-        per_page: 250
+        per_page: 250,
+        page: 10
     });
+    // FIXME
+    core.info(`********** Commit response: ${JSON.stringify(res)}`);
     if (!res?.data?.length) {
         throw new Error(`No commits found for owner: ${owner}, repo: ${repo}, pullNumber: ${pullNumber}`);
     }
