@@ -3,7 +3,7 @@ import { context } from 'src/context'
 import * as core from '@actions/core'
 import { getOctokit } from '@actions/github'
 
-export const listCommits = async (): Promise<string[]> => {
+export const getShas = async (): Promise<string[]> => {
   const { owner, repo, pullNumber, token } = context
   const octokit = getOctokit(token)
 
@@ -40,7 +40,9 @@ export const listCommits = async (): Promise<string[]> => {
   // Remove the most recent commit, because this is always
   // the commit that triggers this pull request workflow
   commits.shift()
-  core.info(`All commit SHAs except the latest one: ${JSON.stringify(commits)}`)
+  core.debug(
+    `All commit SHAs except the latest one: ${JSON.stringify(commits)}`
+  )
 
   return commits
 }

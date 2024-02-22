@@ -13024,7 +13024,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.allChecksPassed = void 0;
+exports.findLastChecksPassedSha = void 0;
 const context_1 = __nccwpck_require__(8954);
 const core = __importStar(__nccwpck_require__(2186));
 const github_1 = __nccwpck_require__(5438);
@@ -13044,7 +13044,18 @@ const allChecksPassed = async (ref) => {
         checkRun.conclusion === 'success' ||
         checkRun.conclusion === 'skipped');
 };
-exports.allChecksPassed = allChecksPassed;
+const findLastChecksPassedSha = async (shas, defaultSha) => {
+    for (const sha of shas) {
+        const allPassed = await allChecksPassed(sha);
+        core.info(`Commit ${sha} has all checks passed: ${allPassed}`);
+        if (allPassed) {
+            // This is the most recent commit that passed all checks
+            return sha;
+        }
+    }
+    return defaultSha;
+};
+exports.findLastChecksPassedSha = findLastChecksPassedSha;
 
 
 /***/ }),
@@ -13078,11 +13089,11 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.listCommits = void 0;
+exports.getShas = void 0;
 const context_1 = __nccwpck_require__(8954);
 const core = __importStar(__nccwpck_require__(2186));
 const github_1 = __nccwpck_require__(5438);
-const listCommits = async () => {
+const getShas = async () => {
     const { owner, repo, pullNumber, token } = context_1.context;
     const octokit = (0, github_1.getOctokit)(token);
     core.debug(`Listing commits for owner: ${owner}, repo: ${repo}, pullNumber: ${pullNumber}`);
@@ -13108,10 +13119,10 @@ const listCommits = async () => {
     // Remove the most recent commit, because this is always
     // the commit that triggers this pull request workflow
     commits.shift();
-    core.info(`All commit SHAs except the latest one: ${JSON.stringify(commits)}`);
+    core.debug(`All commit SHAs except the latest one: ${JSON.stringify(commits)}`);
     return commits;
 };
-exports.listCommits = listCommits;
+exports.getShas = getShas;
 
 
 /***/ }),
@@ -13298,26 +13309,9 @@ const run = async () => {
     const { baseSha, headSha, eventName, filters } = context_1.context;
     checkEvent(eventName);
     try {
-        const commits = await (0, commit_1.listCommits)();
-        let latestPassedCommitSha;
-        for (const commit of commits) {
-            const allPassed = await (0, check_1.allChecksPassed)(commit);
-            core.info(`Commit ${commit} has all checks passed: ${allPassed}`);
-            if (allPassed) {
-                // This is the most recent commit that passed all checks
-                latestPassedCommitSha = commit;
-                break;
-            }
-        }
-        let hasChanges;
-        if (!latestPassedCommitSha) {
-            core.info('No commits that passed checks detected in the past');
-            hasChanges = await (0, diff_1.hasDiff)(baseSha, headSha, filters);
-            writeOutput(hasChanges);
-            return;
-        }
-        core.info('Commit that passed checks detected');
-        hasChanges = await (0, diff_1.hasDiff)(latestPassedCommitSha, headSha, filters);
+        const shas = await (0, commit_1.getShas)();
+        let lastChecksPassedSha = await (0, check_1.findLastChecksPassedSha)(shas, baseSha);
+        const hasChanges = await (0, diff_1.hasDiff)(lastChecksPassedSha, headSha, filters);
         writeOutput(hasChanges);
     }
     catch (error) {

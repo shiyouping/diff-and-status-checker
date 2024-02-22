@@ -1,5 +1,5 @@
-import { allChecksPassed } from 'src/check'
-import { listCommits } from 'src/commit'
+import { findLastChecksPassedSha } from 'src/check'
+import { getShas } from 'src/commit'
 import { context } from 'src/context'
 import { hasDiff } from 'src/diff'
 
@@ -33,31 +33,9 @@ export const run = async (): Promise<void> => {
   checkEvent(eventName)
 
   try {
-    const commits = await listCommits()
-    let latestPassedCommitSha: string | undefined
-
-    for (const commit of commits) {
-      const allPassed = await allChecksPassed(commit)
-      core.info(`Commit ${commit} has all checks passed: ${allPassed}`)
-
-      if (allPassed) {
-        // This is the most recent commit that passed all checks
-        latestPassedCommitSha = commit
-        break
-      }
-    }
-
-    let hasChanges: boolean
-
-    if (!latestPassedCommitSha) {
-      core.info('No commits that passed checks detected in the past')
-      hasChanges = await hasDiff(baseSha, headSha, filters)
-      writeOutput(hasChanges)
-      return
-    }
-
-    core.info('Commit that passed checks detected')
-    hasChanges = await hasDiff(latestPassedCommitSha, headSha, filters)
+    const shas = await getShas()
+    let lastChecksPassedSha = await findLastChecksPassedSha(shas, baseSha)
+    const hasChanges = await hasDiff(lastChecksPassedSha, headSha, filters)
     writeOutput(hasChanges)
   } catch (error) {
     if (error instanceof Error) {

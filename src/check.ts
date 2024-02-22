@@ -3,7 +3,7 @@ import { context } from 'src/context'
 import * as core from '@actions/core'
 import { getOctokit } from '@actions/github'
 
-export const allChecksPassed = async (ref: string): Promise<boolean> => {
+const allChecksPassed = async (ref: string): Promise<boolean> => {
   const { owner, repo, token } = context
   const octokit = getOctokit(token)
 
@@ -27,4 +27,21 @@ export const allChecksPassed = async (ref: string): Promise<boolean> => {
       checkRun.conclusion === 'success' ||
       checkRun.conclusion === 'skipped'
   )
+}
+
+export const findLastChecksPassedSha = async (
+  shas: string[],
+  defaultSha: string
+): Promise<string> => {
+  for (const sha of shas) {
+    const allPassed = await allChecksPassed(sha)
+    core.info(`Commit ${sha} has all checks passed: ${allPassed}`)
+
+    if (allPassed) {
+      // This is the most recent commit that passed all checks
+      return sha
+    }
+  }
+
+  return defaultSha
 }
