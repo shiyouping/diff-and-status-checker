@@ -57,10 +57,9 @@ jobs:
         id: test-action
         uses: ./
         with:
-          includeJobs: JavaScript Tests
-          # excludeJobs: |
-          #   GitHub Actions Test
-          #   JavaScript Tests
+          excludeJobs: |
+            JavaScript Tests
+            GitHub Actions Test
 
       - name: Print Output
         id: output
