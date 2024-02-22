@@ -57,7 +57,7 @@ jobs:
         id: test-action
         uses: ./
         with:
-          includeJobs: CodeQL
+          includeJobs: JavaScript Tests
           # excludeJobs: |
           #   GitHub Actions Test
           #   JavaScript Tests
