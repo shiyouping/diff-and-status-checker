@@ -31,7 +31,7 @@ export const hasDiff = async (
   const diff = await getDiff(baseSha, headSha)
 
   if (diff.length > 0 && filters.length === 0) {
-    core.info(`Diff between ${baseSha} and ${headSha} is true`)
+    core.info(`Diff between base ${baseSha} and head ${headSha} is true`)
     return true
   }
 
@@ -48,6 +48,6 @@ export const hasDiff = async (
     }
   }
 
-  core.info(`Diff between ${baseSha} and ${headSha} is false`)
+  core.info(`Diff between base: ${baseSha} and head: ${headSha} is false`)
   return false
 }

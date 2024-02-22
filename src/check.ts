@@ -34,7 +34,7 @@ const allChecksPassed = async (ref: string): Promise<boolean> => {
     )
 
     if (!tmp.length) {
-      core.info('No check has a job specified by includeJobs')
+      core.debug('No check has a job specified by includeJobs')
       return false
     }
 
@@ -47,7 +47,7 @@ const allChecksPassed = async (ref: string): Promise<boolean> => {
     )
 
     if (!tmp.length) {
-      core.info('All checks are excluded by excludeJobs')
+      core.debug('All checks are excluded by excludeJobs')
       return true
     }
 

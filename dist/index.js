@@ -13048,7 +13048,7 @@ const allChecksPassed = async (ref) => {
     if (includeJobs.length) {
         const tmp = checkRuns.filter(checkRun => includeJobs.includes(checkRun.name));
         if (!tmp.length) {
-            core.info('No check has a job specified by includeJobs');
+            core.debug('No check has a job specified by includeJobs');
             return false;
         }
         checkRuns = tmp;
@@ -13056,7 +13056,7 @@ const allChecksPassed = async (ref) => {
     if (excludeJobs.length) {
         const tmp = checkRuns.filter(checkRun => !excludeJobs.includes(checkRun.name));
         if (!tmp.length) {
-            core.info('All checks are excluded by excludeJobs');
+            core.debug('All checks are excluded by excludeJobs');
             return true;
         }
         checkRuns = tmp;
@@ -13258,7 +13258,7 @@ const getDiff = async (baseSha, headSha) => {
 const hasDiff = async (baseSha, headSha, filters) => {
     const diff = await getDiff(baseSha, headSha);
     if (diff.length > 0 && filters.length === 0) {
-        core.info(`Diff between ${baseSha} and ${headSha} is true`);
+        core.info(`Diff between base ${baseSha} and head ${headSha} is true`);
         return true;
     }
     const options = { dot: true };
@@ -13269,7 +13269,7 @@ const hasDiff = async (baseSha, headSha, filters) => {
             return true;
         }
     }
-    core.info(`Diff between ${baseSha} and ${headSha} is false`);
+    core.info(`Diff between base: ${baseSha} and head: ${headSha} is false`);
     return false;
 };
 exports.hasDiff = hasDiff;
