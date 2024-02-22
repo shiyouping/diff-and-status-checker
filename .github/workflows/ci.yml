@@ -58,8 +58,7 @@ jobs:
         uses: ./
         with:
           filters: |
-            src/*
-            __tests__/*
+            main/*
 
       - name: Print Output
         id: output
