@@ -13233,6 +13233,10 @@ const getDiff = async (baseSha, headSha) => {
 };
 const hasDiff = async (baseSha, headSha, filters) => {
     const diff = await getDiff(baseSha, headSha);
+    if (diff.length > 0 && filters.length === 0) {
+        core.info(`Diff between ${baseSha} and ${headSha} is true`);
+        return true;
+    }
     const options = { dot: true };
     for (const d of diff) {
         const matched = picomatch_1.default.isMatch(d, filters, options);

@@ -11,7 +11,8 @@ inputs:
     required: false
   filters:
     description:
-      'Filters applied to changed files and must be separated in a new line.'
+      'Filters applied to detected changed files and must be separated in a new
+      line. If not specified, all changed files will be checked.'
     required: false
 
 outputs:

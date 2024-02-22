@@ -29,6 +29,12 @@ export const hasDiff = async (
   filters: string[]
 ): Promise<boolean> => {
   const diff = await getDiff(baseSha, headSha)
+
+  if (diff.length > 0 && filters.length === 0) {
+    core.info(`Diff between ${baseSha} and ${headSha} is true`)
+    return true
+  }
+
   const options = { dot: true }
 
   for (const d of diff) {
