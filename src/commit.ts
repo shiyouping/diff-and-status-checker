@@ -12,21 +12,22 @@ export const getShas = async (): Promise<string[]> => {
   const allCommits = [];
   let res;
   let page = 1;
+  const pageSize = 100;
 
   do {
     res = await octokit.rest.pulls.listCommits({
       owner,
       repo,
       pull_number: pullNumber,
-      per_page: 100,
+      per_page: pageSize,
       page
     });
 
-    core.info(`****** Commits: ${JSON.stringify(res)}`);
+    core.debug(`****** List commits response: ${JSON.stringify(res)}`);
 
     allCommits.push(...res.data);
     page++;
-  } while (res.data.length);
+  } while (res.data.length === 0 || res.data.length < pageSize);
 
   if (!allCommits.length) {
     throw new Error(`No commits found for owner: ${owner}, repo: ${repo}, pullNumber: ${pullNumber}`);
