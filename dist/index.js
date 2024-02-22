@@ -13236,8 +13236,7 @@ const hasDiff = async (baseSha, headSha, filters) => {
     const options = { dot: true };
     for (const d of diff) {
         const matched = picomatch_1.default.isMatch(d, filters, options);
-        // FIXME: update log level
-        core.info(`Diff: ${d} is matched in filters ${JSON.stringify(filters)}: ${matched}`);
+        core.debug(`Diff: ${d} is matched in filters ${JSON.stringify(filters)}: ${matched}`);
         if (matched) {
             return true;
         }

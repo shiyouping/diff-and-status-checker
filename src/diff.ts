@@ -33,8 +33,7 @@ export const hasDiff = async (
 
   for (const d of diff) {
     const matched = picomatch.isMatch(d, filters, options)
-    // FIXME: update log level
-    core.info(
+    core.debug(
       `Diff: ${d} is matched in filters ${JSON.stringify(filters)}: ${matched}`
     )
 
