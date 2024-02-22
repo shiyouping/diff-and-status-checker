@@ -27,7 +27,7 @@ export const getShas = async (): Promise<string[]> => {
 
     allCommits.push(...res.data);
     page++;
-  } while (res.data.length === 0 || res.data.length < pageSize);
+  } while (res.data.length >= pageSize);
 
   if (!allCommits.length) {
     throw new Error(`No commits found for owner: ${owner}, repo: ${repo}, pullNumber: ${pullNumber}`);
