@@ -13105,7 +13105,8 @@ const listCommits = async () => {
     if (!allCommits.length) {
         throw new Error(`No commits found for owner: ${owner}, repo: ${repo}, pullNumber: ${pullNumber}`);
     }
-    return res.data;
+    // Start from the most recent commit
+    return allCommits.reverse();
 };
 exports.listCommits = listCommits;
 
@@ -13295,8 +13296,6 @@ const run = async () => {
     checkEvent(eventName);
     try {
         const commits = await (0, commit_1.listCommits)();
-        // Start from the most recent commit
-        commits.reverse();
         let latestPassedCommitSha;
         for (const commit of commits) {
             const allPassed = await (0, check_1.allChecksPassed)(commit.sha);
