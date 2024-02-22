@@ -13085,18 +13085,16 @@ const github_1 = __nccwpck_require__(5438);
 const listCommits = async () => {
     const { owner, repo, pullNumber, token } = context_1.context;
     const octokit = (0, github_1.getOctokit)(token);
-    // FIXME
-    core.info(`Listing commits for owner: ${owner}, repo: ${repo}, pullNumber: ${pullNumber}`);
+    core.debug(`Listing commits for owner: ${owner}, repo: ${repo}, pullNumber: ${pullNumber}`);
     const res = await octokit.rest.pulls.listCommits({
         owner,
         repo,
-        pull_number: pullNumber
+        pull_number: pullNumber,
+        per_page: 250
     });
     if (!res?.data?.length) {
         throw new Error(`No commits found for owner: ${owner}, repo: ${repo}, pullNumber: ${pullNumber}`);
     }
-    // FIXME
-    core.info(`******************** ${JSON.stringify(res)}`);
     return res.data;
 };
 exports.listCommits = listCommits;

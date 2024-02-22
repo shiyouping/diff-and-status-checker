@@ -10,15 +10,15 @@ export const listCommits = async (): Promise<
   const { owner, repo, pullNumber, token } = context
   const octokit = getOctokit(token)
 
-  // FIXME
-  core.info(
+  core.debug(
     `Listing commits for owner: ${owner}, repo: ${repo}, pullNumber: ${pullNumber}`
   )
 
   const res = await octokit.rest.pulls.listCommits({
     owner,
     repo,
-    pull_number: pullNumber
+    pull_number: pullNumber,
+    per_page: 250
   })
 
   if (!res?.data?.length) {
@@ -26,9 +26,6 @@ export const listCommits = async (): Promise<
       `No commits found for owner: ${owner}, repo: ${repo}, pullNumber: ${pullNumber}`
     )
   }
-
-  // FIXME
-  core.info(`******************** ${JSON.stringify(res)}`)
 
   return res.data
 }
