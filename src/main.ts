@@ -34,9 +34,6 @@ export const run = async (): Promise<void> => {
 
   try {
     const commits = await listCommits()
-
-    // Start from the most recent commit
-    commits.reverse()
     let latestPassedCommitSha: string | undefined
 
     for (const commit of commits) {

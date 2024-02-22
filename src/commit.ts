@@ -40,5 +40,6 @@ export const listCommits = async (): Promise<
     )
   }
 
-  return res.data
+  // Start from the most recent commit
+  return allCommits.reverse()
 }
