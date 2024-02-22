@@ -40,6 +40,8 @@ export const listCommits = async (): Promise<
     )
   }
 
+  core.info(`****** allCommits: ${JSON.stringify(allCommits)} ******`)
+
   // Start from the most recent commit
   return allCommits.reverse()
 }

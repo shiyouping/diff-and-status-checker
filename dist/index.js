@@ -13105,6 +13105,7 @@ const listCommits = async () => {
     if (!allCommits.length) {
         throw new Error(`No commits found for owner: ${owner}, repo: ${repo}, pullNumber: ${pullNumber}`);
     }
+    core.info(`****** allCommits: ${JSON.stringify(allCommits)} ******`);
     // Start from the most recent commit
     return allCommits.reverse();
 };
