@@ -13131,7 +13131,7 @@ const getShas = async () => {
         core.debug(`****** List commits response: ${JSON.stringify(res)}`);
         allCommits.push(...res.data);
         page++;
-    } while (res.data.length === 0 || res.data.length < pageSize);
+    } while (res.data.length >= pageSize);
     if (!allCommits.length) {
         throw new Error(`No commits found for owner: ${owner}, repo: ${repo}, pullNumber: ${pullNumber}`);
     }
