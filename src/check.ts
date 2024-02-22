@@ -1,12 +1,11 @@
-import * as core from '@actions/core'
-import { context, getOctokit } from '@actions/github'
+import { context } from 'src/context'
 
-export const allChecksPassed = async (
-  ref: string,
-  token: string
-): Promise<boolean> => {
+import * as core from '@actions/core'
+import { getOctokit } from '@actions/github'
+
+export const allChecksPassed = async (ref: string): Promise<boolean> => {
+  const { owner, repo, token } = context
   const octokit = getOctokit(token)
-  const { owner, repo } = context.repo
 
   core.debug(
     `Getting checks for owner: ${owner}, repo: ${repo} and ref: ${ref}`
@@ -19,10 +18,13 @@ export const allChecksPassed = async (
     return false
   }
 
+  // TODO: Add job's name check
+  // checkRun.name === specifiedJobName
+
   return res.data.check_runs.every(
     checkRun =>
-      checkRun.conclusion === 'success' ||
       checkRun.conclusion === 'neutral' ||
+      checkRun.conclusion === 'success' ||
       checkRun.conclusion === 'skipped'
   )
 }

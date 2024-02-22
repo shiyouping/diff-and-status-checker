@@ -1,28 +1,28 @@
-import * as core from '@actions/core'
-import { context, getOctokit } from '@actions/github'
-import * as octokitPlugin from '@octokit/plugin-rest-endpoint-methods'
+import { context } from 'src/context'
 
-export const listCommits = async (
-  token: string
-): Promise<
-  octokitPlugin.RestEndpointMethodTypes['pulls']['listCommits']['response']['data']
+import * as core from '@actions/core'
+import { getOctokit } from '@actions/github'
+import * as plugin from '@octokit/plugin-rest-endpoint-methods'
+
+export const listCommits = async (): Promise<
+  plugin.RestEndpointMethodTypes['pulls']['listCommits']['response']['data']
 > => {
+  const { owner, repo, pullNumber, token } = context
   const octokit = getOctokit(token)
-  const { owner, repo } = context.repo
-  const pull_number = context.payload.number
 
   core.debug(
-    `Listing commits for owner: ${owner}, repo: ${repo}, pull_number: ${pull_number}`
+    `Listing commits for owner: ${owner}, repo: ${repo}, pullNumber: ${pullNumber}`
   )
+
   const res = await octokit.rest.pulls.listCommits({
     owner,
     repo,
-    pull_number
+    pull_number: pullNumber
   })
 
   if (!res?.data?.length) {
     throw new Error(
-      `No commits found for owner=${owner}, repo=${repo}, pull_number=${pull_number}`
+      `No commits found for owner: ${owner}, repo: ${repo}, pullNumber: ${pullNumber}`
     )
   }
 

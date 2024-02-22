@@ -1,13 +1,13 @@
 import * as core from '@actions/core'
 import { getExecOutput } from '@actions/exec'
 
-const getDiff = async (baseRef: string, headRef: string): Promise<string[]> => {
-  core.startGroup('Getting diff...')
+const getDiff = async (baseSha: string, headSha: string): Promise<string[]> => {
+  core.startGroup('Getting Git diff...')
   let output = ''
 
   try {
     output = (
-      await getExecOutput('git', ['diff', '--name-only', baseRef, headRef])
+      await getExecOutput('git', ['diff', '--name-only', baseSha, headSha])
     ).stdout
   } finally {
     core.info('')
@@ -23,19 +23,22 @@ const getDiff = async (baseRef: string, headRef: string): Promise<string[]> => {
 }
 
 export const hasDiff = async (
-  baseRef: string,
-  headRef: string,
+  baseSha: string,
+  headSha: string,
   filters: string[]
 ): Promise<boolean> => {
-  const diff = await getDiff(baseRef, headRef)
+  const diff = await getDiff(baseSha, headSha)
   for (const filter of filters) {
+    // TODO enhance this match
     const included = diff.some(d => d.includes(filter))
     core.info(`Filter: ${filter} is included in diff: ${included}`)
 
     if (included) {
+      core.info(`Diff between ${baseSha} and ${headSha} is true`)
       return true
     }
   }
 
+  core.info(`Diff between ${baseSha} and ${headSha} is false`)
   return false
 }
