@@ -13086,16 +13086,23 @@ const listCommits = async () => {
     const { owner, repo, pullNumber, token } = context_1.context;
     const octokit = (0, github_1.getOctokit)(token);
     core.debug(`Listing commits for owner: ${owner}, repo: ${repo}, pullNumber: ${pullNumber}`);
-    const res = await octokit.rest.pulls.listCommits({
-        owner,
-        repo,
-        pull_number: pullNumber,
-        per_page: 250,
-        page: 10
-    });
-    // FIXME
-    core.info(`********** Commit response: ${JSON.stringify(res)}`);
-    if (!res?.data?.length) {
+    const allCommits = [];
+    let res;
+    let page = 0;
+    do {
+        // FIXME
+        core.info(`Page: ${page}`);
+        res = await octokit.rest.pulls.listCommits({
+            owner,
+            repo,
+            pull_number: pullNumber,
+            per_page: 5,
+            page
+        });
+        allCommits.push(...res.data);
+        page++;
+    } while (res.data.length);
+    if (!allCommits.length) {
         throw new Error(`No commits found for owner: ${owner}, repo: ${repo}, pullNumber: ${pullNumber}`);
     }
     return res.data;
