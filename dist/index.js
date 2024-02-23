@@ -13045,12 +13045,12 @@ const allChecksPassed = async (ref) => {
     do {
         res = await octokit.rest.checks.listForRef({ owner, repo, ref, page, per_page: pageSize });
         core.debug(`Check run response: ${JSON.stringify(res)}`);
-        if (!res.data?.check_runs.length) {
+        if (!res.data?.check_runs?.length) {
             break;
         }
         checkRuns.push(...res.data.check_runs);
         page++;
-    } while (res.data.check_runs.length >= pageSize);
+    } while (checkRuns.length < res.data.total_count);
     core.debug(`All check runs: ${JSON.stringify(checkRuns)}`);
     if (!checkRuns.length) {
         // No checks for this ref
