@@ -3,7 +3,9 @@ description:
   'A GitHub action to check if there are any differences in the pull request
   since last passed checks'
 author: 'Ricky Shi <ricky.shiyouping@gmail.com>'
-
+branding:
+  color: 'blue'
+  icon: 'check-square'
 inputs:
   token:
     description: 'GitHub token'
