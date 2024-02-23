@@ -13128,7 +13128,7 @@ const getShas = async () => {
             per_page: pageSize,
             page
         });
-        core.debug(`****** List commits response: ${JSON.stringify(res)}`);
+        core.debug(`List commits response: ${JSON.stringify(res)}`);
         allCommits.push(...res.data);
         page++;
     } while (res.data.length >= pageSize);
@@ -13181,7 +13181,7 @@ exports.context = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 const parseArray = (raw = "") => {
-    // Separated by comma or in a new line
+    // Delimited by comma or in a new line
     const filtered = raw.split(/[,\n]+/).filter(item => item.trim() !== "");
     core.debug(`Parsed array: ${JSON.stringify(filtered)}`);
     return filtered;
