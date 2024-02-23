@@ -76,7 +76,7 @@ When used with [actions/checkout](https://github.com/marketplace/actions/checkou
 
 - name: Check diff and status
   id: check-diff-and-status
-  uses: shiyouping/diff-and-status-checker@0.0.1
+  uses: shiyouping/diff-and-status-checker@v0.0.1
   with:
     filters: |
       src/*
