@@ -36,6 +36,7 @@ export const hasDiff = async (baseSha: string, headSha: string, filters: string[
     core.debug(`Diff: ${d} is matched in filters ${JSON.stringify(filters)}: ${matched}`);
 
     if (matched) {
+      core.info(`Diff between base: ${baseSha} and head: ${headSha} is true`);
       return true;
     }
   }
