@@ -14,18 +14,32 @@ const allChecksPassed = async (ref: string): Promise<boolean> => {
   checkJobs(includeJobs, excludeJobs);
 
   const octokit = getOctokit(token);
-
   core.debug(`Getting checks for owner: ${owner}, repo: ${repo} and ref: ${ref}`);
-  const res = await octokit.rest.checks.listForRef({owner, repo, ref});
-  core.debug(`Checks for owner: ${owner}, repo: ${repo} and ref: ${ref}: ${JSON.stringify(res)}`);
 
-  if (!res?.data?.check_runs?.length) {
+  const pageSize = 100;
+  let page = 1;
+  let res;
+  let checkRuns = [];
+
+  do {
+    res = await octokit.rest.checks.listForRef({owner, repo, ref, page, per_page: pageSize});
+    core.debug(`Check run response: ${JSON.stringify(res)}`);
+
+    if (!res.data?.check_runs?.length) {
+      break;
+    }
+
+    checkRuns.push(...res.data.check_runs);
+    page++;
+  } while (checkRuns.length < res.data.total_count);
+
+  core.debug(`All check runs: ${JSON.stringify(checkRuns)}`);
+
+  if (!checkRuns.length) {
     // No checks for this ref
     core.debug(`No checks for owner: ${owner}, repo: ${repo} and ref: ${ref}`);
     return false;
   }
-
-  let checkRuns = res.data.check_runs;
 
   if (includeJobs.length) {
     const tmp = checkRuns.filter(checkRun => {
