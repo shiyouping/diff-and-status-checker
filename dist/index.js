@@ -13038,14 +13038,25 @@ const allChecksPassed = async (ref) => {
     checkJobs(includeJobs, excludeJobs);
     const octokit = (0, github_1.getOctokit)(token);
     core.debug(`Getting checks for owner: ${owner}, repo: ${repo} and ref: ${ref}`);
-    const res = await octokit.rest.checks.listForRef({ owner, repo, ref });
-    core.debug(`Checks for owner: ${owner}, repo: ${repo} and ref: ${ref}: ${JSON.stringify(res)}`);
-    if (!res?.data?.check_runs?.length) {
+    const pageSize = 100;
+    let page = 1;
+    let res;
+    let checkRuns = [];
+    do {
+        res = await octokit.rest.checks.listForRef({ owner, repo, ref, page, per_page: pageSize });
+        core.debug(`Check run response: ${JSON.stringify(res)}`);
+        if (!res.data?.check_runs.length) {
+            break;
+        }
+        checkRuns.push(...res.data.check_runs);
+        page++;
+    } while (res.data.check_runs.length >= pageSize);
+    core.debug(`All check runs: ${JSON.stringify(checkRuns)}`);
+    if (!checkRuns.length) {
         // No checks for this ref
         core.debug(`No checks for owner: ${owner}, repo: ${repo} and ref: ${ref}`);
         return false;
     }
-    let checkRuns = res.data.check_runs;
     if (includeJobs.length) {
         const tmp = checkRuns.filter(checkRun => {
             core.debug(`Check run head SHA: ${checkRun.head_sha}, name: ${checkRun.name}, status: ${checkRun.status}, conclusion: ${checkRun.conclusion}`);
@@ -13124,9 +13135,9 @@ const getShas = async () => {
     const octokit = (0, github_1.getOctokit)(token);
     core.debug(`Listing commits for owner: ${owner}, repo: ${repo}, pullNumber: ${pullNumber}`);
     const allCommits = [];
-    let res;
-    let page = 1;
     const pageSize = 100;
+    let page = 1;
+    let res;
     do {
         res = await octokit.rest.pulls.listCommits({
             owner,
@@ -13135,11 +13146,14 @@ const getShas = async () => {
             per_page: pageSize,
             page
         });
-        core.debug(`List commits response: ${JSON.stringify(res)}`);
+        core.debug(`Commits response: ${JSON.stringify(res)}`);
+        if (!res?.data?.length) {
+            break;
+        }
         allCommits.push(...res.data);
         page++;
     } while (res.data.length >= pageSize);
-    core.debug(`All commits for owner: ${owner}, repo: ${repo}, pullNumber: ${pullNumber}: ${JSON.stringify(allCommits)}`);
+    core.debug(`All commits: ${JSON.stringify(allCommits)}`);
     if (!allCommits.length) {
         throw new Error(`No commits found for owner: ${owner}, repo: ${repo}, pullNumber: ${pullNumber}`);
     }
