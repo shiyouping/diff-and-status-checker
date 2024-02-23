@@ -37,12 +37,12 @@ The GitHub token used to create an authenticated client.
 
 ### `filters` - (optional)
 
-A list of filters delimited by comma or in a new line. If not specified, all changed files will be checked. See [picomatch](https://github.com/micromatch/picomatch) for how to write your glob patterns.
+A list of filters delimited by comma or in a new line. If specified, only changed files in the designated paths will be checked; otherwise all will be checked. See [picomatch](https://github.com/micromatch/picomatch) for how to write glob patterns for your paths.
 
 ### `includeJobs` - (optional)
 
-A list of GitHub workflow job names delimited by comma or in a new line. If not specified, all jobs will be checked. Only one of `includeJobs` and `excludeJobs` is allowed.
+A list of GitHub workflow job names delimited by comma or in a new line. If specified, only those jobs in the list will be checked; otherwise all will be checked. Only one of `includeJobs` and `excludeJobs` is allowed. If a commit has no workflow jobs specified in this list, it will be seen as `FAILED`, and the action will continue to check its previous commits.
 
 ### `excludeJobs` - (optional)
 
-A list of GitHub workflow job names delimited by comma or in a new line. If not specified, all jobs will be checked. Only one of `includeJobs` and `excludeJobs` is allowed.
+A list of GitHub workflow job names delimited by comma or in a new line. If specified, those jobs in the list will be skipped; otherwise none will be skipped. Only one of `includeJobs` and `excludeJobs` is allowed. If a commit's workflow jobs are all in this list, it will be seen as `PASSED`, and the action will use the SHA of this commit to calculate the Git difference.
