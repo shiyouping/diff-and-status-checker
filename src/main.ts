@@ -1,7 +1,7 @@
-import {findLastChecksPassedSha} from "src/check";
-import {getShas} from "src/commit";
-import {context} from "src/context";
-import {hasDiff} from "src/diff";
+import { findLastChecksPassedSha } from "src/check";
+import { getShas } from "src/commit";
+import { context } from "src/context";
+import { hasDiff } from "src/diff";
 
 import * as core from "@actions/core";
 
@@ -24,7 +24,7 @@ const writeOutput = (hasDiff: boolean): void => {
  * @returns {Promise<void>} Resolves when the action is complete.
  */
 export const run = async (): Promise<void> => {
-  const {baseSha, headSha, eventName, filters} = context;
+  const { baseSha, headSha, eventName, filters } = context;
   checkEvent(eventName);
 
   try {

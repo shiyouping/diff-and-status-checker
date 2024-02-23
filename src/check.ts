@@ -1,7 +1,7 @@
-import {context} from "src/context";
+import { context } from "src/context";
 
 import * as core from "@actions/core";
-import {getOctokit} from "@actions/github";
+import { getOctokit } from "@actions/github";
 
 const checkJobs = (includeJobs: string[], excludeJobs: string[]): void => {
   if (includeJobs.length > 0 && excludeJobs.length > 0) {
@@ -10,7 +10,7 @@ const checkJobs = (includeJobs: string[], excludeJobs: string[]): void => {
 };
 
 const allChecksPassed = async (ref: string): Promise<boolean> => {
-  const {owner, repo, token, includeJobs, excludeJobs} = context;
+  const { owner, repo, token, includeJobs, excludeJobs } = context;
   checkJobs(includeJobs, excludeJobs);
 
   const octokit = getOctokit(token);
@@ -22,7 +22,7 @@ const allChecksPassed = async (ref: string): Promise<boolean> => {
   let checkRuns = [];
 
   do {
-    res = await octokit.rest.checks.listForRef({owner, repo, ref, page, per_page: pageSize});
+    res = await octokit.rest.checks.listForRef({ owner, repo, ref, page, per_page: pageSize });
     core.debug(`Check run response: ${JSON.stringify(res)}`);
 
     if (!res.data?.check_runs?.length) {

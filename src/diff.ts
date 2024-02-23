@@ -1,5 +1,5 @@
 import * as core from "@actions/core";
-import {getExecOutput} from "@actions/exec";
+import { getExecOutput } from "@actions/exec";
 import picomatch from "picomatch";
 
 const getDiff = async (baseSha: string, headSha: string): Promise<string[]> => {
@@ -29,7 +29,7 @@ export const hasDiff = async (baseSha: string, headSha: string, filters: string[
     return true;
   }
 
-  const options = {dot: true};
+  const options = { dot: true };
 
   for (const d of diff) {
     const matched = picomatch.isMatch(d, filters, options);
