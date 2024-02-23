@@ -1,3 +1,5 @@
+badges/
 dist/
 node_modules/
 coverage/
+script/

@@ -13030,7 +13030,7 @@ const core = __importStar(__nccwpck_require__(2186));
 const github_1 = __nccwpck_require__(5438);
 const checkJobs = (includeJobs, excludeJobs) => {
     if (includeJobs.length > 0 && excludeJobs.length > 0) {
-        throw new Error('Can not have both includeJobs and excludeJobs');
+        throw new Error("Can not have both includeJobs and excludeJobs");
     }
 };
 const allChecksPassed = async (ref) => {
@@ -13048,7 +13048,7 @@ const allChecksPassed = async (ref) => {
     if (includeJobs.length) {
         const tmp = checkRuns.filter(checkRun => includeJobs.includes(checkRun.name));
         if (!tmp.length) {
-            core.debug('No check has a job specified by includeJobs');
+            core.debug("No check has a job specified by includeJobs");
             return false;
         }
         checkRuns = tmp;
@@ -13056,14 +13056,12 @@ const allChecksPassed = async (ref) => {
     if (excludeJobs.length) {
         const tmp = checkRuns.filter(checkRun => !excludeJobs.includes(checkRun.name));
         if (!tmp.length) {
-            core.debug('All checks are excluded by excludeJobs');
+            core.debug("All checks are excluded by excludeJobs");
             return true;
         }
         checkRuns = tmp;
     }
-    return checkRuns.every(checkRun => checkRun.conclusion === 'neutral' ||
-        checkRun.conclusion === 'success' ||
-        checkRun.conclusion === 'skipped');
+    return checkRuns.every(checkRun => checkRun.conclusion === "neutral" || checkRun.conclusion === "success" || checkRun.conclusion === "skipped");
 };
 const findLastChecksPassedSha = async (shas, defaultSha) => {
     for (const sha of shas) {
@@ -13120,18 +13118,20 @@ const getShas = async () => {
     core.debug(`Listing commits for owner: ${owner}, repo: ${repo}, pullNumber: ${pullNumber}`);
     const allCommits = [];
     let res;
-    let page = 0;
+    let page = 1;
+    const pageSize = 100;
     do {
         res = await octokit.rest.pulls.listCommits({
             owner,
             repo,
             pull_number: pullNumber,
-            per_page: 250,
+            per_page: pageSize,
             page
         });
+        core.debug(`****** List commits response: ${JSON.stringify(res)}`);
         allCommits.push(...res.data);
         page++;
-    } while (res.data.length);
+    } while (res.data.length >= pageSize);
     if (!allCommits.length) {
         throw new Error(`No commits found for owner: ${owner}, repo: ${repo}, pullNumber: ${pullNumber}`);
     }
@@ -13180,9 +13180,9 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.context = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
-const parseArray = (raw = '') => {
+const parseArray = (raw = "") => {
     // Separated by comma or in a new line
-    const filtered = raw.split(/[,\n]+/).filter(item => item.trim() !== '');
+    const filtered = raw.split(/[,\n]+/).filter(item => item.trim() !== "");
     core.debug(`Parsed array: ${JSON.stringify(filtered)}`);
     return filtered;
 };
@@ -13193,10 +13193,10 @@ const context = {
     pullNumber: github.context.payload.number,
     owner: github.context.repo.owner,
     repo: github.context.repo.repo,
-    token: core.getInput('token', { required: false }),
-    filters: parseArray(core.getInput('filters', { required: false })),
-    includeJobs: parseArray(core.getInput('includeJobs', { required: false })),
-    excludeJobs: parseArray(core.getInput('excludeJobs', { required: false }))
+    token: core.getInput("token", { required: false }),
+    filters: parseArray(core.getInput("filters", { required: false })),
+    includeJobs: parseArray(core.getInput("includeJobs", { required: false })),
+    excludeJobs: parseArray(core.getInput("excludeJobs", { required: false }))
 };
 exports.context = context;
 core.info(`Context: ${JSON.stringify(context)}`);
@@ -13241,17 +13241,17 @@ const core = __importStar(__nccwpck_require__(2186));
 const exec_1 = __nccwpck_require__(1514);
 const picomatch_1 = __importDefault(__nccwpck_require__(8569));
 const getDiff = async (baseSha, headSha) => {
-    core.startGroup('Getting Git diff...');
-    let output = '';
+    core.startGroup("Getting Git diff...");
+    let output = "";
     try {
-        output = (await (0, exec_1.getExecOutput)('git', ['diff', '--name-only', baseSha, headSha])).stdout;
+        output = (await (0, exec_1.getExecOutput)("git", ["diff", "--name-only", baseSha, headSha])).stdout;
     }
     finally {
-        core.info('');
+        core.info("");
         core.endGroup();
     }
     core.debug(`Execution output: ${output}`);
-    const diff = output.split('\n').filter(path => path.trim().length > 0);
+    const diff = output.split("\n").filter(path => path.trim().length > 0);
     core.debug(`Diff: ${JSON.stringify(diff)}`);
     return diff;
 };
@@ -13313,19 +13313,14 @@ const context_1 = __nccwpck_require__(8954);
 const diff_1 = __nccwpck_require__(4275);
 const core = __importStar(__nccwpck_require__(2186));
 const checkEvent = (eventName) => {
-    const validEvents = [
-        'pull_request',
-        'pull_request_review',
-        'pull_request_review_comment',
-        'pull_request_target'
-    ];
+    const validEvents = ["pull_request", "pull_request_review", "pull_request_review_comment", "pull_request_target"];
     if (!validEvents.includes(eventName)) {
         throw new Error(`${eventName} is not a valid event.`);
     }
 };
 const writeOutput = (hasDiff) => {
-    const result = hasDiff ? 'true' : 'false';
-    core.setOutput('hasDiff', result);
+    const result = hasDiff ? "true" : "false";
+    core.setOutput("hasDiff", result);
     core.info(`Wrote output. hasDiff: ${result}`);
 };
 /**
@@ -13561,7 +13556,6 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
  * The entrypoint for the action.
  */
 const main_1 = __nccwpck_require__(399);
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
 (0, main_1.run)();
 
 })();

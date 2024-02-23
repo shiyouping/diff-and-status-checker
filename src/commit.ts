@@ -1,48 +1,45 @@
-import { context } from 'src/context'
+import {context} from "src/context";
 
-import * as core from '@actions/core'
-import { getOctokit } from '@actions/github'
+import * as core from "@actions/core";
+import {getOctokit} from "@actions/github";
 
 export const getShas = async (): Promise<string[]> => {
-  const { owner, repo, pullNumber, token } = context
-  const octokit = getOctokit(token)
+  const {owner, repo, pullNumber, token} = context;
+  const octokit = getOctokit(token);
 
-  core.debug(
-    `Listing commits for owner: ${owner}, repo: ${repo}, pullNumber: ${pullNumber}`
-  )
+  core.debug(`Listing commits for owner: ${owner}, repo: ${repo}, pullNumber: ${pullNumber}`);
 
-  const allCommits = []
-  let res
-  let page = 0
+  const allCommits = [];
+  let res;
+  let page = 1;
+  const pageSize = 100;
 
   do {
     res = await octokit.rest.pulls.listCommits({
       owner,
       repo,
       pull_number: pullNumber,
-      per_page: 250,
+      per_page: pageSize,
       page
-    })
+    });
 
-    allCommits.push(...res.data)
-    page++
-  } while (res.data.length)
+    core.debug(`****** List commits response: ${JSON.stringify(res)}`);
+
+    allCommits.push(...res.data);
+    page++;
+  } while (res.data.length >= pageSize);
 
   if (!allCommits.length) {
-    throw new Error(
-      `No commits found for owner: ${owner}, repo: ${repo}, pullNumber: ${pullNumber}`
-    )
+    throw new Error(`No commits found for owner: ${owner}, repo: ${repo}, pullNumber: ${pullNumber}`);
   }
 
   // Start from the most recent commit
-  const commits = allCommits.map(commit => commit.sha).reverse()
+  const commits = allCommits.map(commit => commit.sha).reverse();
 
   // Remove the most recent commit, because this is always
   // the commit that triggers this pull request workflow
-  commits.shift()
-  core.debug(
-    `All commit SHAs except the latest one: ${JSON.stringify(commits)}`
-  )
+  commits.shift();
+  core.debug(`All commit SHAs except the latest one: ${JSON.stringify(commits)}`);
 
-  return commits
-}
+  return commits;
+};
