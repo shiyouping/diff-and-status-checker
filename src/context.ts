@@ -2,7 +2,7 @@ import * as core from "@actions/core";
 import * as github from "@actions/github";
 
 const parseArray = (raw = ""): string[] => {
-  // Separated by comma or in a new line
+  // Delimited by comma or in a new line
   const filtered = raw.split(/[,\n]+/).filter(item => item.trim() !== "");
   core.debug(`Parsed array: ${JSON.stringify(filtered)}`);
   return filtered;

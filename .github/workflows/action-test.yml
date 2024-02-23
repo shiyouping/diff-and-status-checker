@@ -23,6 +23,12 @@ jobs:
       - name: Test Action
         id: test-action
         uses: ./
+        with:
+          filters: |
+            src/*
+            __tests__/*
+          includeJobs: |
+            Health Check
 
       - name: Print Output
         id: output

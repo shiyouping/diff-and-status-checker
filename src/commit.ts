@@ -23,7 +23,7 @@ export const getShas = async (): Promise<string[]> => {
       page
     });
 
-    core.debug(`****** List commits response: ${JSON.stringify(res)}`);
+    core.debug(`List commits response: ${JSON.stringify(res)}`);
 
     allCommits.push(...res.data);
     page++;
