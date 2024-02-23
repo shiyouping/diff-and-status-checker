@@ -13039,6 +13039,7 @@ const allChecksPassed = async (ref) => {
     const octokit = (0, github_1.getOctokit)(token);
     core.debug(`Getting checks for owner: ${owner}, repo: ${repo} and ref: ${ref}`);
     const res = await octokit.rest.checks.listForRef({ owner, repo, ref });
+    core.debug(`Checks for owner: ${owner}, repo: ${repo} and ref: ${ref}: ${JSON.stringify(res)}`);
     if (!res?.data?.check_runs?.length) {
         // No checks for this ref
         core.debug(`No checks for owner: ${owner}, repo: ${repo} and ref: ${ref}`);
@@ -13046,17 +13047,23 @@ const allChecksPassed = async (ref) => {
     }
     let checkRuns = res.data.check_runs;
     if (includeJobs.length) {
-        const tmp = checkRuns.filter(checkRun => includeJobs.includes(checkRun.name));
+        const tmp = checkRuns.filter(checkRun => {
+            core.debug(`Check run head SHA: ${checkRun.head_sha}, name: ${checkRun.name}, status: ${checkRun.status}, conclusion: ${checkRun.conclusion}`);
+            return includeJobs.includes(checkRun.name);
+        });
         if (!tmp.length) {
-            core.debug("No check has a job specified by includeJobs");
+            core.debug(`SHA: ${ref} has no check job specified by includeJobs: ${JSON.stringify(includeJobs)}`);
             return false;
         }
         checkRuns = tmp;
     }
     if (excludeJobs.length) {
-        const tmp = checkRuns.filter(checkRun => !excludeJobs.includes(checkRun.name));
+        const tmp = checkRuns.filter(checkRun => {
+            core.debug(`Check run head SHA: ${checkRun.head_sha}, name: ${checkRun.name}, status: ${checkRun.status}, conclusion: ${checkRun.conclusion}`);
+            return !excludeJobs.includes(checkRun.name);
+        });
         if (!tmp.length) {
-            core.debug("All checks are excluded by excludeJobs");
+            core.debug(`SHA: ${ref} has check jobs all specified by excludeJobs: ${JSON.stringify(excludeJobs)}`);
             return true;
         }
         checkRuns = tmp;
@@ -13132,6 +13139,7 @@ const getShas = async () => {
         allCommits.push(...res.data);
         page++;
     } while (res.data.length >= pageSize);
+    core.debug(`All commits for owner: ${owner}, repo: ${repo}, pullNumber: ${pullNumber}: ${JSON.stringify(allCommits)}`);
     if (!allCommits.length) {
         throw new Error(`No commits found for owner: ${owner}, repo: ${repo}, pullNumber: ${pullNumber}`);
     }
