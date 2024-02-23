@@ -26,7 +26,7 @@ This action is only applicable to pull request events, i.e. `pull_request`, `pul
     # Optional.
     # A list of filters delimited by comma or in a new line. If specified,
     # only changed files in the designated paths will be checked; otherwise
-    # all will be checked. See [picomatch](https://github.com/micromatch/picomatch) for how to write glob patterns for your paths.
+    # all will be checked. See "[picomatch](https://github.com/micromatch/picomatch)" for how to write glob patterns for your paths.
     filters:
 
     # Optional.
