@@ -61,7 +61,7 @@ This action is only applicable to pull request events:
 | ------- | ------------------------------------------------------ | ----------------- |
 | hasDiff | Indicate if there are differences for the given inputs | "true" or "false" |
 
-### Notice
+## Notice
 
 When used with [actions/checkout](https://github.com/marketplace/actions/checkout), an appropriate `fetch-depth` number must be provided; otherwise the diff may not be detected if the most recent commit that passed the checks is too far away from `HEAD`.
 
