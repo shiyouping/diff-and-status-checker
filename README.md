@@ -10,7 +10,12 @@ When you are waiting for your pull request to be approved and merged, some commi
 
 ## Scope
 
-This action is only applicable to pull request events, i.e. `pull_request`, `pull_request_review`, `pull_request_review_comment` and `pull_request_target`.
+This action is only applicable to pull request events:
+
+- pull_request
+- pull_request_review
+- pull_request_review_comment
+- pull_request_target
 
 ## Usage
 
@@ -19,7 +24,7 @@ This action is only applicable to pull request events, i.e. `pull_request`, `pul
 ```yaml
 - uses: shiyouping/diff-and-status-checker@0.0.1
   with:
-    # Optional. Default: github.token
+    # Optional. Default: ${{ github.token }}
     # The GitHub token used to create an authenticated client.
     token:
 
@@ -56,20 +61,30 @@ This action is only applicable to pull request events, i.e. `pull_request`, `pul
 | ------- | ------------------------------------------------------ | ----------------- |
 | hasDiff | Indicate if there are differences for the given inputs | "true" or "false" |
 
+### Notice
+
+When used with [actions/checkout](https://github.com/marketplace/actions/checkout), an appropriate `fetch-depth` number must be provided; otherwise the diff may not be detected if the most recent commit that passed the checks is too far away from `HEAD`.
+
 ## Example
 
 ```yaml
+- name: Checkout
+  id: checkout
+  uses: actions/checkout@v4
+  with:
+    fetch-depth: 50
+
 - name: Check diff and status
-        id: check-diff-and-status
-        uses: shiyouping/diff-and-status-checker@0.0.1
-        with:
-          filters: |
-            src/*
-            test/*
-          includeJobs: |
-            Lint
-            Build
-            Test
+  id: check-diff-and-status
+  uses: shiyouping/diff-and-status-checker@0.0.1
+  with:
+    filters: |
+      src/*
+      test/*
+    includeJobs: |
+      Lint
+      Build
+      Test
 
 - name: Deploy to production
   id: deploy-to-production
