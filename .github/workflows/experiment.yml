@@ -13,7 +13,7 @@ jobs:
     name: Job 1
     runs-on: ubuntu-latest
     outputs:
-      job1_result: ${{ steps.print.outputs.result}}
+      job1_result: "good morning"
 
     steps:
       - name: Echo
@@ -30,7 +30,6 @@ jobs:
           echo ${{ toJson(steps.conditional.outcome) }}
 
       - name: Print
-        if: success()
         id: print
         run: echo "result=true" >> "$GITHUB_ENV"
 
