@@ -36,3 +36,4 @@ jobs:
       - name: Print job 1
         run: |
           echo ${{ toJson(needs.job1.outputs.job1_result) }}
+          echo ${{ env }}
