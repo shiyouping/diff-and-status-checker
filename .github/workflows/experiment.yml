@@ -23,9 +23,15 @@ jobs:
         if: env.NAME == 'true'
         run: echo "Running in dev environment"
 
+      - name: Check
+        if: success()
+        run: echo "Checking"
+
       - name: Print
+        if: success()
         id: print
         run: echo "result=true" >> "$GITHUB_ENV"
+
 
   job2:
     name: Job 2
