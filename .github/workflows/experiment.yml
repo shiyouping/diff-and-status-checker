@@ -20,12 +20,14 @@ jobs:
         run: echo "Hello, world!"
 
       - name: Conditional
+        id: conditional
         if: env.NAME == 'true'
         run: echo "Running in dev environment"
 
       - name: Check
-        if: success()
-        run: echo "Checking"
+        run: |
+          echo ${{ toJson(steps.conditional.conclusion) }}
+          echo ${{ toJson(steps.conditional.outcome) }}
 
       - name: Print
         if: success()
