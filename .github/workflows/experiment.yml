@@ -21,6 +21,9 @@ jobs:
         if: env.NAME == 'true'
         run: echo "Running in dev environment"
 
+      - name: Steps
+        run: echo ${{ toJson(steps) }}
+
   job2:
     name: Job 2
     needs: job1
@@ -28,4 +31,9 @@ jobs:
 
     steps:
       - name: Print job 1
-        run: echo ${{ toJson(needs.job1) }}
+        run: |
+          echo ${{ toJson(github) }}
+          echo ${{ toJson(job) }}
+          echo ${{ toJson(runner) }}
+          echo ${{ toJson(steps) }}
+          echo ${{ toJson(needs) }}
