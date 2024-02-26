@@ -13,7 +13,6 @@ jobs:
     name: Job 1
     runs-on: ubuntu-latest
     outputs:
-      job1_result: 'good morning'
       job1_print: ${{steps.print.outputs}}
 
     steps:
