@@ -12,6 +12,8 @@ jobs:
   job1:
     name: Job 1
     runs-on: ubuntu-latest
+    outputs:
+      job1_result: ${{ steps.print.outputs.result}}
 
     steps:
       - name: Echo
@@ -21,8 +23,9 @@ jobs:
         if: env.NAME == 'true'
         run: echo "Running in dev environment"
 
-      - name: Steps
-        run: echo "test=world" >> "$GITHUB_ENV"
+      - name: Print
+        id: print
+        run: echo "result=true" >> "$GITHUB_ENV"
 
   job2:
     name: Job 2
