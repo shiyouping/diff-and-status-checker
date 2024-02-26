@@ -11,39 +11,17 @@ env:
 
 jobs:
   job1:
-    name: Job 1
     runs-on: ubuntu-latest
     outputs:
-      job1_print: ${{steps.print.outputs}}
-
+      my_output: ${{ steps.my_step.outputs.my_value }}
     steps:
-      - name: Echo
-        run: echo "Hello, world!"
-
-      - name: Conditional
-        id: conditional
-        if: env.NAME == 'true'
-        run: echo "Running in dev environment"
-
-      - name: Check
-        run: |
-          echo ${{ toJson(steps.conditional.conclusion) }}
-          echo ${{ toJson(steps.conditional.outcome) }}
-
-      - name: Print
-        id: print
-        run: echo "result=true" >> "$GITHUB_ENV"
-
+    - id: my_step
+      run: echo "my_value=Hello World" >> "$GITHUB_ENV"
 
   job2:
-    name: Job 2
-    needs: job1
     runs-on: ubuntu-latest
-
+    needs: job1
     steps:
-      - name: Print job 1
+      - name: print
         run: |
-          echo ${{ toJson(needs.job1.outputs) }}
-          echo ${{ toJson(needs.job1.outputs.job1_result) }}
-          echo ${{ toJson(needs.job1.outputs.job1_print) }}
-          echo ${{ toJson(env) }}
+          echo "The output from job1 is: ${{ needs.job1.outputs.my_output }}"
