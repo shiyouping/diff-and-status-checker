@@ -1,0 +1,31 @@
+name: Experiment
+
+on:
+  pull_request:
+    branches:
+      - main
+
+env:
+  NAME: prod
+
+jobs:
+  job1:
+    name: Job 1
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Echo
+        run: echo "Hello, world!"
+
+      - name: Conditional
+        if: env.NAME == 'true'
+        run: echo "Running in dev environment"
+
+  job2:
+    name: Job 2
+    needs: job1
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Print job 1
+        run: echo ${{ toJson(needs.job1.outputs) }}
