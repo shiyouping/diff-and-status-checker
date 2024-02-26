@@ -13,7 +13,8 @@ jobs:
     name: Job 1
     runs-on: ubuntu-latest
     outputs:
-      job1_result: "good morning"
+      job1_result: 'good morning'
+      job1_print: ${{steps.print.outputs}}
 
     steps:
       - name: Echo
@@ -42,5 +43,5 @@ jobs:
     steps:
       - name: Print job 1
         run: |
-          echo ${{ toJson(needs.job1.outputs.job1_result) }}
-          echo ${{ env }}
+          echo ${{ toJson(needs.job1.outputs) }}
+          echo ${{ toJson(env) }}
