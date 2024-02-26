@@ -22,7 +22,7 @@ jobs:
         run: echo "Running in dev environment"
 
       - name: Steps
-        run: echo ${{ toJson(steps) }}
+        run: echo "test=world" >> "$GITHUB_ENV"
 
   job2:
     name: Job 2
@@ -32,8 +32,4 @@ jobs:
     steps:
       - name: Print job 1
         run: |
-          echo ${{ toJson(github) }}
-          echo ${{ toJson(job) }}
-          echo ${{ toJson(runner) }}
-          echo ${{ toJson(steps) }}
-          echo ${{ toJson(needs) }}
+          echo ${{ toJson(needs.job1) }}
