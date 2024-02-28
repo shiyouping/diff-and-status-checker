@@ -64,7 +64,7 @@ This action is only applicable to pull request events:
 
 ## Algorithm
 
-This action will retrieve all the commits that belong to a pull request, and check every single commit starting from the most recent one in reverse order. If the commit has jobs included in `includeJobs` but not in `excludeJobs`, and the conclusion of each job is one of `neutral`, `success` and `skipped`, then this action will mark the current commit as `base` commit, and use `git diff --name-only ${base-sha} ${head-sha}` to calculate the differences in between. If the differences are included in the `filters`, then this action will return `true`, otherwise `false`.
+This action will retrieve all the commits that belong to a pull request, and check every single commit starting from the most recent one in reverse order. If the commit has jobs included in `includeJobs` but not in `excludeJobs`, and the conclusion of each job is one of `neutral`, `success` and `skipped`, then this action will mark the current commit as `base` commit, and use `git diff --name-only ${base} ${head}` to calculate the differences in between. If the differences are included in the `filters`, then this action will return `true`, otherwise `false`.
 
 ## Note
 
