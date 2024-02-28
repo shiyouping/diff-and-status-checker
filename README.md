@@ -22,7 +22,8 @@ This action is only applicable to pull request events:
 ### Inputs
 
 ```yaml
-- uses: shiyouping/diff-and-status-checker@0.0.1
+# Use an appropriate version
+- uses: shiyouping/diff-and-status-checker@0.0.3
   with:
     # Optional. Default: ${{ github.token }}
     # The GitHub token used to create an authenticated client.
@@ -61,33 +62,43 @@ This action is only applicable to pull request events:
 | ------- | ------------------------------------------------------ | ----------------- |
 | hasDiff | Indicate if there are differences for the given inputs | "true" or "false" |
 
-## Notice
+## Algorithm
 
-When used with [actions/checkout](https://github.com/marketplace/actions/checkout), an appropriate `fetch-depth` number must be provided; otherwise the diff may not be detected if the most recent commit that passed the checks is too far away from `HEAD`.
+This action will retrieve all the commits that belong to a pull request, and check every single commit starting from the most recent one in reverse order. If the commit has jobs included in `includeJobs` but not in `excludeJobs`, and the conclusion of each job is one of `neutral`, `success` and `skipped`, then this action will mark the current commit as `base` commit, and use `git diff --name-only ${base-sha} ${head-sha}` to calculate the differences in between. If the differences are included in the `filters`, then this action will return `true`, otherwise `false`.
+
+## Note
+
+- When used with [actions/checkout](https://github.com/marketplace/actions/checkout), an appropriate `fetch-depth` number must be provided; otherwise the diff may not be detected if the most recent commit that passed the checks is too far away from `HEAD`.
+- `filters` supports glob patterns for the paths. See [Picomatch](https://github.com/micromatch/picomatch) for more details.
+- Only one of `includeJobs` and `excludeJobs` is allowed.
 
 ## Example
 
 ```yaml
-- name: Checkout
-  id: checkout
-  uses: actions/checkout@v4
-  with:
-    fetch-depth: 50
+steps:
+  - name: Checkout
+    id: checkout
+    uses: actions/checkout@v4
+    with:
+      fetch-depth: 50
 
-- name: Check diff and status
-  id: check-diff-and-status
-  uses: shiyouping/diff-and-status-checker@v0.0.3 # You should use the latest version
-  with:
-    filters: |
-      src/*
-      test/*
-    includeJobs: |
-      Lint
-      Build
-      Test
+  - name: Check diff and status
+    id: check-diff-and-status
+    uses: shiyouping/diff-and-status-checker@v0.0.3
+    with:
+      filters: |
+        src/*
+        test/*
+      includeJobs: |
+        Lint
+        Build
+        Test
 
-- name: Deploy to production
-  id: deploy-to-production
-  if: ${{steps.check-diff-and-status.outputs.hasDiff == 'true'}}
-  run: echo "Deploying to production"
+  - name: Run unit tests
+    if: ${{steps.check-diff-and-status.outputs.hasDiff == 'true'}}
+    run: echo "Running unit tests"
+
+  - name: Deploy to production
+    if: ${{steps.check-diff-and-status.outputs.hasDiff == 'true'}}
+    run: echo "Deploying to production"
 ```
