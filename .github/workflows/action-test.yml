@@ -23,6 +23,9 @@ jobs:
       - name: Test Action
         id: test-action
         uses: ./
+        with:
+          includeJobs: |
+            Action Test 2
 
       - name: Print Output
         id: output
