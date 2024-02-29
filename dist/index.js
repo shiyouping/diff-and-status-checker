@@ -13025,36 +13025,32 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.findLastChecksPassedSha = void 0;
-const context_1 = __nccwpck_require__(8954);
 const core = __importStar(__nccwpck_require__(2186));
 const github_1 = __nccwpck_require__(5438);
 const checkJobs = (includeJobs, excludeJobs) => {
     if (includeJobs.length > 0 && excludeJobs.length > 0) {
-        throw new Error("Can not have both includeJobs and excludeJobs");
+        throw new Error("Only one of includeJobs and excludeJobs is allowed!");
     }
 };
-const allChecksPassed = async (ref) => {
-    const { owner, repo, token, includeJobs, excludeJobs } = context_1.context;
+const areChecksPassed = async ({ owner, repo, token, sha, includeJobs, excludeJobs }) => {
     checkJobs(includeJobs, excludeJobs);
+    core.debug(`Getting checks for owner: ${owner}, repo: ${repo} and ref: ${sha}`);
     const octokit = (0, github_1.getOctokit)(token);
-    core.debug(`Getting checks for owner: ${owner}, repo: ${repo} and ref: ${ref}`);
-    const pageSize = 100;
-    let page = 1;
-    let res;
+    const responses = octokit.paginate.iterator(octokit.rest.checks.listForRef, { owner, repo, ref: sha, per_page: 100 });
     let checkRuns = [];
-    do {
-        res = await octokit.rest.checks.listForRef({ owner, repo, ref, page, per_page: pageSize });
-        core.debug(`Check run response: ${JSON.stringify(res)}`);
-        if (!res.data?.check_runs?.length) {
-            break;
+    for await (const response of responses) {
+        if (response.status !== 200) {
+            throw new Error(`Failed to list checks. HTTP status code: ${response.status}`);
         }
-        checkRuns.push(...res.data.check_runs);
-        page++;
-    } while (checkRuns.length < res.data.total_count);
+        for (const checkRun of response.data.check_runs) {
+            core.debug(`Check run: ${JSON.stringify(checkRun)}`);
+            checkRuns.push(checkRun);
+        }
+    }
     core.debug(`All check runs: ${JSON.stringify(checkRuns)}`);
-    if (!checkRuns.length) {
-        // No checks for this ref
-        core.debug(`No checks for owner: ${owner}, repo: ${repo} and ref: ${ref}`);
+    if (checkRuns.length === 0) {
+        // No checks for this sha
+        core.debug(`No checks for owner: ${owner}, repo: ${repo} and sha: ${sha}`);
         return false;
     }
     if (includeJobs.length) {
@@ -13063,7 +13059,7 @@ const allChecksPassed = async (ref) => {
             return includeJobs.includes(checkRun.name);
         });
         if (!tmp.length) {
-            core.debug(`SHA: ${ref} has no check job specified by includeJobs: ${JSON.stringify(includeJobs)}`);
+            core.debug(`SHA: ${sha} has no check job specified by includeJobs: ${JSON.stringify(includeJobs)}`);
             return false;
         }
         checkRuns = tmp;
@@ -13074,23 +13070,38 @@ const allChecksPassed = async (ref) => {
             return !excludeJobs.includes(checkRun.name);
         });
         if (!tmp.length) {
-            core.debug(`SHA: ${ref} has check jobs all specified by excludeJobs: ${JSON.stringify(excludeJobs)}`);
+            core.debug(`SHA: ${sha} has check jobs all specified by excludeJobs: ${JSON.stringify(excludeJobs)}`);
             return true;
         }
         checkRuns = tmp;
     }
     return checkRuns.every(checkRun => checkRun.conclusion === "neutral" || checkRun.conclusion === "success" || checkRun.conclusion === "skipped");
 };
-const findLastChecksPassedSha = async (shas, defaultSha) => {
-    for (const sha of shas) {
-        const allPassed = await allChecksPassed(sha);
-        core.info(`Commit ${sha} has specified checks passed: ${allPassed}`);
-        if (allPassed) {
-            // This is the most recent commit that passed all checks
-            return sha;
+const findLastChecksPassedSha = async ({ owner, repo, token, includeJobs, excludeJobs, commitShas }) => {
+    core.startGroup("Finding the last commit that passed the specified checks...");
+    try {
+        for (const sha of commitShas) {
+            const passed = await areChecksPassed({
+                owner,
+                repo,
+                token,
+                sha,
+                includeJobs,
+                excludeJobs
+            });
+            core.info(`Commit ${sha} passed specified checks: ${passed}`);
+            if (passed) {
+                // This is the most recent commit that passed checks
+                return sha;
+            }
         }
+        // Can't find one
+        return undefined;
     }
-    return defaultSha;
+    finally {
+        core.info("");
+        core.endGroup();
+    }
 };
 exports.findLastChecksPassedSha = findLastChecksPassedSha;
 
@@ -13126,46 +13137,45 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getShas = void 0;
-const context_1 = __nccwpck_require__(8954);
+exports.getCommitShas = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const github_1 = __nccwpck_require__(5438);
-const getShas = async () => {
-    const { owner, repo, pullNumber, token } = context_1.context;
-    const octokit = (0, github_1.getOctokit)(token);
-    core.debug(`Listing commits for owner: ${owner}, repo: ${repo}, pullNumber: ${pullNumber}`);
-    const allCommits = [];
-    const pageSize = 100;
-    let page = 1;
-    let res;
-    do {
-        res = await octokit.rest.pulls.listCommits({
+const getCommitShas = async ({ owner, repo, pullNumber, token }) => {
+    core.startGroup("Getting Git SHAs...");
+    try {
+        core.debug(`Listing commits for owner: ${owner}, repo: ${repo}, pullNumber: ${pullNumber}`);
+        const octokit = (0, github_1.getOctokit)(token);
+        const responses = octokit.paginate.iterator(octokit.rest.pulls.listCommits, {
             owner,
             repo,
             pull_number: pullNumber,
-            per_page: pageSize,
-            page
+            per_page: 100
         });
-        core.debug(`Commits response: ${JSON.stringify(res)}`);
-        if (!res?.data?.length) {
-            break;
+        let shas = [];
+        for await (const response of responses) {
+            if (response.status !== 200) {
+                throw new Error(`Failed to list commits for pull request. HTTP status code: ${response.status}`);
+            }
+            for (const commit of response.data) {
+                core.debug(`Commit: ${JSON.stringify(commit)}`);
+                shas.push(commit.sha);
+            }
         }
-        allCommits.push(...res.data);
-        page++;
-    } while (res.data.length >= pageSize);
-    core.debug(`All commits: ${JSON.stringify(allCommits)}`);
-    if (!allCommits.length) {
-        throw new Error(`No commits found for owner: ${owner}, repo: ${repo}, pullNumber: ${pullNumber}`);
+        core.debug(`Commit shas for the pull request: ${JSON.stringify(shas)}`);
+        // Start from the most recent commit
+        shas.reverse();
+        // Remove the most recent commit, because this is always
+        // the commit that triggers this pull request workflow
+        shas.shift();
+        core.info(`All commit shas except the latest one: ${JSON.stringify(shas)}`);
+        return shas;
     }
-    // Start from the most recent commit
-    const commits = allCommits.map(commit => commit.sha).reverse();
-    // Remove the most recent commit, because this is always
-    // the commit that triggers this pull request workflow
-    commits.shift();
-    core.debug(`All commit SHAs except the latest one: ${JSON.stringify(commits)}`);
-    return commits;
+    finally {
+        core.info("");
+        core.endGroup();
+    }
 };
-exports.getShas = getShas;
+exports.getCommitShas = getCommitShas;
 
 
 /***/ }),
@@ -13258,44 +13268,95 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.hasDiff = void 0;
+exports.hasBranchDiff = exports.hasDiffBetween = void 0;
+const picomatch_1 = __importDefault(__nccwpck_require__(8569));
 const core = __importStar(__nccwpck_require__(2186));
 const exec_1 = __nccwpck_require__(1514);
-const picomatch_1 = __importDefault(__nccwpck_require__(8569));
+const github_1 = __nccwpck_require__(5438);
 const getDiff = async (baseSha, headSha) => {
-    core.startGroup("Getting Git diff...");
-    let output = "";
-    try {
-        output = (await (0, exec_1.getExecOutput)("git", ["diff", "--name-only", baseSha, headSha])).stdout;
-    }
-    finally {
-        core.info("");
-        core.endGroup();
-    }
+    const output = (await (0, exec_1.getExecOutput)("git", ["diff", "--name-only", baseSha, headSha])).stdout;
     core.debug(`Execution output: ${output}`);
     const diff = output.split("\n").filter(path => path.trim().length > 0);
     core.debug(`Diff: ${JSON.stringify(diff)}`);
     return diff;
 };
-const hasDiff = async (baseSha, headSha, filters) => {
-    const diff = await getDiff(baseSha, headSha);
-    if (diff.length > 0 && filters.length === 0) {
-        core.info(`Diff between base ${baseSha} and head ${headSha} is true`);
+const listChangedFiles = async ({ owner, repo, pullNumber, token }) => {
+    core.debug(`Listing pull request changed files for owner: ${owner}, repo: ${repo}, pull number: ${pullNumber}`);
+    const octokit = (0, github_1.getOctokit)(token);
+    const responses = octokit.paginate.iterator(octokit.rest.pulls.listFiles, {
+        owner,
+        repo,
+        pull_number: pullNumber,
+        per_page: 100
+    });
+    const changedFiles = [];
+    for await (const response of responses) {
+        if (response.status !== 200) {
+            throw new Error(`Failed to list changed files for pull request. HTTP status code: ${response.status}`);
+        }
+        for (const change of response.data) {
+            core.debug(`Changed file: ${JSON.stringify(change)}`);
+            changedFiles.push(change.filename);
+        }
+    }
+    core.info(`Changed files for the pull request: ${JSON.stringify(changedFiles)}`);
+    return changedFiles;
+};
+const isMatched = (paths, patterns) => {
+    core.debug(`paths: ${JSON.stringify(paths)}`);
+    core.debug(`patterns: ${JSON.stringify(patterns)}`);
+    if (paths.length === 0) {
+        return false;
+    }
+    if (paths.length > 0 && patterns.length === 0) {
         return true;
     }
     const options = { dot: true };
-    for (const d of diff) {
-        const matched = picomatch_1.default.isMatch(d, filters, options);
-        core.debug(`Diff: ${d} is matched in filters ${JSON.stringify(filters)}: ${matched}`);
+    for (const path of paths) {
+        const matched = picomatch_1.default.isMatch(path, patterns, options);
+        core.debug(`path: ${path} is matched in patterns: ${JSON.stringify(patterns)}: ${matched}`);
+        if (matched) {
+            return true;
+        }
+    }
+    return false;
+};
+const hasDiffBetween = async (baseSha, headSha, filters) => {
+    core.startGroup(`Checking diff between ${baseSha} and ${headSha}...`);
+    try {
+        const diff = await getDiff(baseSha, headSha);
+        const matched = isMatched(diff, filters);
         if (matched) {
             core.info(`Diff between base: ${baseSha} and head: ${headSha} is true`);
             return true;
         }
+        core.info(`Diff between base: ${baseSha} and head: ${headSha} is false`);
+        return false;
     }
-    core.info(`Diff between base: ${baseSha} and head: ${headSha} is false`);
-    return false;
+    finally {
+        core.info("");
+        core.endGroup();
+    }
 };
-exports.hasDiff = hasDiff;
+exports.hasDiffBetween = hasDiffBetween;
+const hasBranchDiff = async ({ owner, repo, pullNumber, token, filters }) => {
+    core.startGroup(`Checking branch diff for pull request: ${pullNumber}...`);
+    try {
+        const changedFiles = await listChangedFiles({ owner, repo, pullNumber, token });
+        const matched = isMatched(changedFiles, filters);
+        if (matched) {
+            core.info("This pull request branch has changed files");
+            return true;
+        }
+        core.info("This pull request branch has no changed files");
+        return false;
+    }
+    finally {
+        core.info("");
+        core.endGroup();
+    }
+};
+exports.hasBranchDiff = hasBranchDiff;
 
 
 /***/ }),
@@ -13336,7 +13397,8 @@ const context_1 = __nccwpck_require__(8954);
 const diff_1 = __nccwpck_require__(4275);
 const core = __importStar(__nccwpck_require__(2186));
 const checkEvent = (eventName) => {
-    const validEvents = ["pull_request", "pull_request_review", "pull_request_review_comment", "pull_request_target"];
+    // May add new events in the future
+    const validEvents = ["pull_request"];
     if (!validEvents.includes(eventName)) {
         throw new Error(`${eventName} is not a valid event.`);
     }
@@ -13352,18 +13414,35 @@ const writeOutput = (hasDiff) => {
  */
 const run = async () => {
     try {
-        const { baseSha, headSha, eventName, filters } = context_1.context;
+        const { headSha, eventName, filters, token, pullNumber, owner, repo, includeJobs, excludeJobs } = context_1.context;
         checkEvent(eventName);
-        let hasChanges = await (0, diff_1.hasDiff)(baseSha, headSha, []);
-        if (!hasChanges) {
+        let hasDiff = await (0, diff_1.hasBranchDiff)({ filters, token, pullNumber, owner, repo });
+        if (!hasDiff) {
             // This PR doesn't have a change
-            writeOutput(hasChanges);
+            writeOutput(false);
             return;
         }
-        const shas = await (0, commit_1.getShas)();
-        let lastChecksPassedSha = await (0, check_1.findLastChecksPassedSha)(shas, baseSha);
-        hasChanges = await (0, diff_1.hasDiff)(lastChecksPassedSha, headSha, filters);
-        writeOutput(hasChanges);
+        const commitShas = await (0, commit_1.getCommitShas)({
+            owner,
+            repo,
+            pullNumber,
+            token
+        });
+        let lastChecksPassedSha = await (0, check_1.findLastChecksPassedSha)({
+            owner,
+            repo,
+            token,
+            includeJobs,
+            excludeJobs,
+            commitShas
+        });
+        if (lastChecksPassedSha === undefined) {
+            // This PR has changed files but doesn't have any specified checks passed
+            writeOutput(true);
+            return;
+        }
+        hasDiff = await (0, diff_1.hasDiffBetween)(lastChecksPassedSha, headSha, filters);
+        writeOutput(hasDiff);
     }
     catch (error) {
         if (error instanceof Error) {
