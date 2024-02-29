@@ -13344,19 +13344,25 @@ const checkEvent = (eventName) => {
 const writeOutput = (hasDiff) => {
     const result = hasDiff ? "true" : "false";
     core.setOutput("hasDiff", result);
-    core.info(`Wrote output. hasDiff: ${result}`);
+    core.info(`Output is hasDiff: ${result}`);
 };
 /**
  * The main function for the action.
  * @returns {Promise<void>} Resolves when the action is complete.
  */
 const run = async () => {
-    const { baseSha, headSha, eventName, filters } = context_1.context;
-    checkEvent(eventName);
     try {
+        const { baseSha, headSha, eventName, filters } = context_1.context;
+        checkEvent(eventName);
+        let hasChanges = await (0, diff_1.hasDiff)(baseSha, headSha, []);
+        if (!hasChanges) {
+            // This PR doesn't have a change
+            writeOutput(hasChanges);
+            return;
+        }
         const shas = await (0, commit_1.getShas)();
         let lastChecksPassedSha = await (0, check_1.findLastChecksPassedSha)(shas, baseSha);
-        const hasChanges = await (0, diff_1.hasDiff)(lastChecksPassedSha, headSha, filters);
+        hasChanges = await (0, diff_1.hasDiff)(lastChecksPassedSha, headSha, filters);
         writeOutput(hasChanges);
     }
     catch (error) {
