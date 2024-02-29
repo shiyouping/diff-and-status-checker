@@ -1,50 +1,56 @@
-import { context } from "src/context";
-
 import * as core from "@actions/core";
 import { getOctokit } from "@actions/github";
 
-export const getShas = async (): Promise<string[]> => {
-  const { owner, repo, pullNumber, token } = context;
-  const octokit = getOctokit(token);
+export const getCommitShas = async ({
+  owner,
+  repo,
+  pullNumber,
+  token
+}: {
+  owner: string;
+  repo: string;
+  pullNumber: number;
+  token: string;
+}): Promise<string[]> => {
+  core.startGroup("Getting Git SHAs...");
 
-  core.debug(`Listing commits for owner: ${owner}, repo: ${repo}, pullNumber: ${pullNumber}`);
+  try {
+    core.debug(`Listing commits for owner: ${owner}, repo: ${repo}, pullNumber: ${pullNumber}`);
 
-  const allCommits = [];
-  const pageSize = 100;
-  let page = 1;
-  let res;
-
-  do {
-    res = await octokit.rest.pulls.listCommits({
+    const octokit = getOctokit(token);
+    const responses = octokit.paginate.iterator(octokit.rest.pulls.listCommits, {
       owner,
       repo,
       pull_number: pullNumber,
-      per_page: pageSize,
-      page
+      per_page: 100
     });
-    core.debug(`Commits response: ${JSON.stringify(res)}`);
 
-    if (!res?.data?.length) {
-      break;
+    let shas = [];
+
+    for await (const response of responses) {
+      if (response.status !== 200) {
+        throw new Error(`Failed to list commits for pull request. HTTP status code: ${response.status}`);
+      }
+
+      for (const commit of response.data) {
+        core.debug(`Commit: ${JSON.stringify(commit)}`);
+        shas.push(commit.sha);
+      }
     }
 
-    allCommits.push(...res.data);
-    page++;
-  } while (res.data.length >= pageSize);
+    core.debug(`Commit shas for the pull request: ${JSON.stringify(shas)}`);
 
-  core.debug(`All commits: ${JSON.stringify(allCommits)}`);
+    // Start from the most recent commit
+    shas.reverse();
 
-  if (!allCommits.length) {
-    throw new Error(`No commits found for owner: ${owner}, repo: ${repo}, pullNumber: ${pullNumber}`);
+    // Remove the most recent commit, because this is always
+    // the commit that triggers this pull request workflow
+    shas.shift();
+
+    core.info(`All commit shas except the latest one: ${JSON.stringify(shas)}`);
+    return shas;
+  } finally {
+    core.info("");
+    core.endGroup();
   }
-
-  // Start from the most recent commit
-  const commits = allCommits.map(commit => commit.sha).reverse();
-
-  // Remove the most recent commit, because this is always
-  // the commit that triggers this pull request workflow
-  commits.shift();
-  core.debug(`All commit SHAs except the latest one: ${JSON.stringify(commits)}`);
-
-  return commits;
 };

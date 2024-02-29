@@ -1,43 +1,52 @@
-import { context } from "src/context";
-
 import * as core from "@actions/core";
 import { getOctokit } from "@actions/github";
 
 const checkJobs = (includeJobs: string[], excludeJobs: string[]): void => {
   if (includeJobs.length > 0 && excludeJobs.length > 0) {
-    throw new Error("Can not have both includeJobs and excludeJobs");
+    throw new Error("Only one of includeJobs and excludeJobs is allowed!");
   }
 };
 
-const allChecksPassed = async (ref: string): Promise<boolean> => {
-  const { owner, repo, token, includeJobs, excludeJobs } = context;
+const areChecksPassed = async ({
+  owner,
+  repo,
+  token,
+  sha,
+  includeJobs,
+  excludeJobs
+}: {
+  owner: string;
+  repo: string;
+  token: string;
+  sha: string;
+  includeJobs: string[];
+  excludeJobs: string[];
+}): Promise<boolean> => {
   checkJobs(includeJobs, excludeJobs);
 
+  core.debug(`Getting checks for owner: ${owner}, repo: ${repo} and ref: ${sha}`);
   const octokit = getOctokit(token);
-  core.debug(`Getting checks for owner: ${owner}, repo: ${repo} and ref: ${ref}`);
 
-  const pageSize = 100;
-  let page = 1;
-  let res;
+  const responses = octokit.paginate.iterator(octokit.rest.checks.listForRef, { owner, repo, ref: sha, per_page: 100 });
+
   let checkRuns = [];
 
-  do {
-    res = await octokit.rest.checks.listForRef({ owner, repo, ref, page, per_page: pageSize });
-    core.debug(`Check run response: ${JSON.stringify(res)}`);
-
-    if (!res.data?.check_runs?.length) {
-      break;
+  for await (const response of responses) {
+    if (response.status !== 200) {
+      throw new Error(`Failed to list checks. HTTP status code: ${response.status}`);
     }
 
-    checkRuns.push(...res.data.check_runs);
-    page++;
-  } while (checkRuns.length < res.data.total_count);
+    for (const checkRun of response.data.check_runs) {
+      core.debug(`Check run: ${JSON.stringify(checkRun)}`);
+      checkRuns.push(checkRun);
+    }
+  }
 
   core.debug(`All check runs: ${JSON.stringify(checkRuns)}`);
 
-  if (!checkRuns.length) {
-    // No checks for this ref
-    core.debug(`No checks for owner: ${owner}, repo: ${repo} and ref: ${ref}`);
+  if (checkRuns.length === 0) {
+    // No checks for this sha
+    core.debug(`No checks for owner: ${owner}, repo: ${repo} and sha: ${sha}`);
     return false;
   }
 
@@ -51,7 +60,7 @@ const allChecksPassed = async (ref: string): Promise<boolean> => {
     });
 
     if (!tmp.length) {
-      core.debug(`SHA: ${ref} has no check job specified by includeJobs: ${JSON.stringify(includeJobs)}`);
+      core.debug(`SHA: ${sha} has no check job specified by includeJobs: ${JSON.stringify(includeJobs)}`);
       return false;
     }
 
@@ -68,7 +77,7 @@ const allChecksPassed = async (ref: string): Promise<boolean> => {
     });
 
     if (!tmp.length) {
-      core.debug(`SHA: ${ref} has check jobs all specified by excludeJobs: ${JSON.stringify(excludeJobs)}`);
+      core.debug(`SHA: ${sha} has check jobs all specified by excludeJobs: ${JSON.stringify(excludeJobs)}`);
       return true;
     }
 
@@ -81,16 +90,46 @@ const allChecksPassed = async (ref: string): Promise<boolean> => {
   );
 };
 
-export const findLastChecksPassedSha = async (shas: string[], defaultSha: string): Promise<string> => {
-  for (const sha of shas) {
-    const allPassed = await allChecksPassed(sha);
-    core.info(`Commit ${sha} has specified checks passed: ${allPassed}`);
+export const findLastChecksPassedSha = async ({
+  owner,
+  repo,
+  token,
+  includeJobs,
+  excludeJobs,
+  commitShas
+}: {
+  owner: string;
+  repo: string;
+  token: string;
+  includeJobs: string[];
+  excludeJobs: string[];
+  commitShas: string[];
+}): Promise<string | undefined> => {
+  core.startGroup("Finding the last commit that passed the specified checks...");
 
-    if (allPassed) {
-      // This is the most recent commit that passed all checks
-      return sha;
+  try {
+    for (const sha of commitShas) {
+      const passed = await areChecksPassed({
+        owner,
+        repo,
+        token,
+        sha,
+        includeJobs,
+        excludeJobs
+      });
+
+      core.info(`Commit ${sha} passed specified checks: ${passed}`);
+
+      if (passed) {
+        // This is the most recent commit that passed checks
+        return sha;
+      }
     }
-  }
 
-  return defaultSha;
+    // Can't find one
+    return undefined;
+  } finally {
+    core.info("");
+    core.endGroup();
+  }
 };
