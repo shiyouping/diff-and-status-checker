@@ -24,8 +24,12 @@ jobs:
         id: test-action
         uses: ./
         with:
-          includeJobs: |
-            Action Test 2
+          excludeJobs: |
+            Action Test
+            CodeQL
+            Check dist
+            Health Check
+            Analyze Code (TypeScript)
 
       - name: Print Output
         id: output
