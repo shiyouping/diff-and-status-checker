@@ -38,7 +38,7 @@ const areChecksPassed = async ({
       throw new Error(`Failed to list checks. HTTP status code: ${response.status}`);
     }
 
-    for (const checkRun of response.data.check_runs) {
+    for (const checkRun of response.data) {
       core.debug(`Check run: ${JSON.stringify(checkRun)}`);
       checkRuns.push(checkRun);
     }
