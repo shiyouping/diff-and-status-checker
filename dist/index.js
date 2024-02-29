@@ -13302,7 +13302,7 @@ const listChangedFiles = async ({ owner, repo, pullNumber, token }) => {
             changedFiles.push(change.filename);
         }
     }
-    core.info(`Changed files for the pull request: ${JSON.stringify(changedFiles)}`);
+    core.info(`Changed files for the pull request: ${changedFiles.join("\n")}`);
     return changedFiles;
 };
 const isMatched = (paths, patterns) => {
