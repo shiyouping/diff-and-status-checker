@@ -13090,7 +13090,7 @@ const findLastChecksPassedSha = async ({ owner, repo, token, includeJobs, exclud
                 includeJobs,
                 excludeJobs
             });
-            core.info(`Commit ${sha} passed specified checks: ${passed}`);
+            core.info(`Commit ${sha} passed specified checks: ${passed}. includeJobs: ${includeJobs}, excludeJobs: ${excludeJobs}`);
             if (passed) {
                 // This is the most recent commit that passed checks
                 return sha;
