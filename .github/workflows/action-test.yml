@@ -23,10 +23,6 @@ jobs:
       - name: Test Action
         id: test-action
         uses: ./
-        with:
-          filters: |
-            src/*
-            __tests__/*
 
       - name: Print Output
         id: output
