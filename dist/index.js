@@ -13043,7 +13043,7 @@ const areChecksPassed = async ({ owner, repo, token, sha, includeJobs, excludeJo
         if (response.status !== 200) {
             throw new Error(`Failed to list checks. HTTP status code: ${response.status}`);
         }
-        for (const checkRun of response.data.check_runs) {
+        for (const checkRun of response.data) {
             core.debug(`Check run: ${JSON.stringify(checkRun)}`);
             checkRuns.push(checkRun);
         }
