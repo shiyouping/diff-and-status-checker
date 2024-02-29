@@ -13039,6 +13039,7 @@ const areChecksPassed = async ({ owner, repo, token, sha, includeJobs, excludeJo
     const responses = octokit.paginate.iterator(octokit.rest.checks.listForRef, { owner, repo, ref: sha, per_page: 100 });
     let checkRuns = [];
     for await (const response of responses) {
+        core.debug(`Check runs response: ${JSON.stringify(response)}`);
         if (response.status !== 200) {
             throw new Error(`Failed to list checks. HTTP status code: ${response.status}`);
         }
@@ -13153,6 +13154,7 @@ const getCommitShas = async ({ owner, repo, pullNumber, token }) => {
         });
         let shas = [];
         for await (const response of responses) {
+            core.debug(`List commits response: ${JSON.stringify(response)}`);
             if (response.status !== 200) {
                 throw new Error(`Failed to list commits for pull request. HTTP status code: ${response.status}`);
             }
@@ -13291,6 +13293,7 @@ const listChangedFiles = async ({ owner, repo, pullNumber, token }) => {
     });
     const changedFiles = [];
     for await (const response of responses) {
+        core.debug(`List changed files response: ${JSON.stringify(response)}`);
         if (response.status !== 200) {
             throw new Error(`Failed to list changed files for pull request. HTTP status code: ${response.status}`);
         }

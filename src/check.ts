@@ -32,6 +32,8 @@ const areChecksPassed = async ({
   let checkRuns = [];
 
   for await (const response of responses) {
+    core.debug(`Check runs response: ${JSON.stringify(response)}`);
+
     if (response.status !== 200) {
       throw new Error(`Failed to list checks. HTTP status code: ${response.status}`);
     }

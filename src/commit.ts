@@ -28,6 +28,8 @@ export const getCommitShas = async ({
     let shas = [];
 
     for await (const response of responses) {
+      core.debug(`List commits response: ${JSON.stringify(response)}`);
+
       if (response.status !== 200) {
         throw new Error(`Failed to list commits for pull request. HTTP status code: ${response.status}`);
       }

@@ -38,6 +38,8 @@ const listChangedFiles = async ({
   const changedFiles = [];
 
   for await (const response of responses) {
+    core.debug(`List changed files response: ${JSON.stringify(response)}`);
+
     if (response.status !== 200) {
       throw new Error(`Failed to list changed files for pull request. HTTP status code: ${response.status}`);
     }
