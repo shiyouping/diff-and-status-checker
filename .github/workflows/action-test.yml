@@ -24,12 +24,12 @@ jobs:
         id: test-action
         uses: ./
         with:
-          excludeJobs: |
+          filters: |
+            src/*
+            __tests__/*
+            .github/workflows/*
+          includeJobs: |
             Action Test
-            CodeQL
-            Check dist
-            Health Check
-            Analyze Code (TypeScript)
 
       - name: Print Output
         id: output

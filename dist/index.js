@@ -13330,10 +13330,10 @@ const hasDiffBetween = async (baseSha, headSha, filters) => {
         const diff = await getDiff(baseSha, headSha);
         const matched = isMatched(diff, filters);
         if (matched) {
-            core.info(`Diff between base: ${baseSha} and head: ${headSha} is true`);
+            core.info(`Diff between base: ${baseSha} and head: ${headSha} is true. filters: ${JSON.stringify(filters)}`);
             return true;
         }
-        core.info(`Diff between base: ${baseSha} and head: ${headSha} is false`);
+        core.info(`Diff between base: ${baseSha} and head: ${headSha} is false. filters: ${JSON.stringify(filters)}`);
         return false;
     }
     finally {
