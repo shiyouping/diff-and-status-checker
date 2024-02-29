@@ -1,10 +1,10 @@
-import {context} from "src/context";
+import { context } from "src/context";
 
 import * as core from "@actions/core";
-import {getOctokit} from "@actions/github";
+import { getOctokit } from "@actions/github";
 
 export const getShas = async (): Promise<string[]> => {
-  const {owner, repo, pullNumber, token} = context;
+  const { owner, repo, pullNumber, token } = context;
   const octokit = getOctokit(token);
 
   core.debug(`Listing commits for owner: ${owner}, repo: ${repo}, pullNumber: ${pullNumber}`);
