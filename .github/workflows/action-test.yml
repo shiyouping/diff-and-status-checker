@@ -28,7 +28,7 @@ jobs:
             src/*
             __tests__/*
           includeJobs: |
-            Health Check
+            Action Test
 
       - name: Print Output
         id: output

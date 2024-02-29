@@ -54,7 +54,7 @@ const areChecksPassed = async ({
 
   if (includeJobs.length) {
     const tmp = checkRuns.filter(checkRun => {
-      core.debug(
+      core.info(
         `Check run head SHA: ${checkRun.head_sha}, name: ${checkRun.name}, status: ${checkRun.status}, conclusion: ${checkRun.conclusion}`
       );
 

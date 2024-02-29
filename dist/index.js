@@ -13056,7 +13056,7 @@ const areChecksPassed = async ({ owner, repo, token, sha, includeJobs, excludeJo
     }
     if (includeJobs.length) {
         const tmp = checkRuns.filter(checkRun => {
-            core.debug(`Check run head SHA: ${checkRun.head_sha}, name: ${checkRun.name}, status: ${checkRun.status}, conclusion: ${checkRun.conclusion}`);
+            core.info(`Check run head SHA: ${checkRun.head_sha}, name: ${checkRun.name}, status: ${checkRun.status}, conclusion: ${checkRun.conclusion}`);
             return includeJobs.includes(checkRun.name);
         });
         if (!tmp.length) {
@@ -13317,7 +13317,7 @@ const isMatched = (paths, patterns) => {
     const options = { dot: true };
     for (const path of paths) {
         const matched = picomatch_1.default.isMatch(path, patterns, options);
-        core.debug(`path: ${path} is matched in patterns: ${JSON.stringify(patterns)}: ${matched}`);
+        core.info(`path: ${path} is matched in patterns: ${JSON.stringify(patterns)}: ${matched}`);
         if (matched) {
             return true;
         }

@@ -70,7 +70,7 @@ const isMatched = (paths: string[], patterns: string[]): boolean => {
 
   for (const path of paths) {
     const matched = picomatch.isMatch(path, patterns, options);
-    core.debug(`path: ${path} is matched in patterns: ${JSON.stringify(patterns)}: ${matched}`);
+    core.info(`path: ${path} is matched in patterns: ${JSON.stringify(patterns)}: ${matched}`);
 
     if (matched) {
       return true;
