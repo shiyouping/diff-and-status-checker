@@ -16,7 +16,7 @@ const checkEvent = (eventName: string): void => {
 const writeOutput = (hasDiff: boolean): void => {
   const result = hasDiff ? "true" : "false";
   core.setOutput("hasDiff", result);
-  core.info(`Wrote output. hasDiff: ${result}`);
+  core.info(`Output is hasDiff: ${result}`);
 };
 
 /**
@@ -24,13 +24,20 @@ const writeOutput = (hasDiff: boolean): void => {
  * @returns {Promise<void>} Resolves when the action is complete.
  */
 export const run = async (): Promise<void> => {
-  const {baseSha, headSha, eventName, filters} = context;
-  checkEvent(eventName);
-
   try {
+    const {baseSha, headSha, eventName, filters} = context;
+    checkEvent(eventName);
+
+    let hasChanges = await hasDiff(baseSha, headSha, []);
+    if (!hasChanges) {
+      // This PR doesn't have a change
+      writeOutput(hasChanges);
+      return;
+    }
+
     const shas = await getShas();
     let lastChecksPassedSha = await findLastChecksPassedSha(shas, baseSha);
-    const hasChanges = await hasDiff(lastChecksPassedSha, headSha, filters);
+    hasChanges = await hasDiff(lastChecksPassedSha, headSha, filters);
     writeOutput(hasChanges);
   } catch (error) {
     if (error instanceof Error) {
