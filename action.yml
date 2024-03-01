@@ -9,7 +9,7 @@ branding:
 inputs:
   token:
     description:
-      'Optional. Default: ${{ github.token }}
+      'Optional.
       The GitHub token used to create an authenticated client.'
     default: ${{ github.token }}
     required: false
