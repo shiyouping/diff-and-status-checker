@@ -121,7 +121,7 @@ export const findLastChecksPassedSha = async ({
       });
 
       core.info(
-        `Commit ${sha} passed specified checks: ${passed}. includeJobs: ${includeJobs}, excludeJobs: ${excludeJobs}`
+        `Commit ${sha} passed specified checks: ${passed}. includeJobs: ${includeJobs}, excludeJobs:  ${excludeJobs}`
       );
 
       if (passed) {
