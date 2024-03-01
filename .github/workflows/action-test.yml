@@ -24,9 +24,6 @@ jobs:
         id: test-action
         uses: ./
         with:
-          filters: |
-            src/*
-            __tests__/*
           includeJobs: |
             Action Test
 
