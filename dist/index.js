@@ -13027,17 +13027,11 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.findLastChecksPassedSha = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const github_1 = __nccwpck_require__(5438);
-const checkJobs = (includeJobs, excludeJobs) => {
-    if (includeJobs.length > 0 && excludeJobs.length > 0) {
-        throw new Error("Only one of includeJobs and excludeJobs is allowed!");
-    }
-};
-const areChecksPassed = async ({ owner, repo, token, sha, includeJobs, excludeJobs }) => {
-    checkJobs(includeJobs, excludeJobs);
+const listChecks = async ({ owner, repo, token, sha }) => {
     core.debug(`Getting checks for owner: ${owner}, repo: ${repo} and ref: ${sha}`);
+    const checkRuns = [];
     const octokit = (0, github_1.getOctokit)(token);
     const responses = octokit.paginate.iterator(octokit.rest.checks.listForRef, { owner, repo, ref: sha, per_page: 100 });
-    let checkRuns = [];
     for await (const response of responses) {
         core.debug(`Check runs response: ${JSON.stringify(response)}`);
         if (response.status !== 200) {
@@ -13049,6 +13043,10 @@ const areChecksPassed = async ({ owner, repo, token, sha, includeJobs, excludeJo
         }
     }
     core.debug(`All check runs: ${JSON.stringify(checkRuns)}`);
+    return checkRuns;
+};
+const areChecksPassed = async ({ owner, repo, token, sha, includeJobs, excludeJobs }) => {
+    let checkRuns = await listChecks({ owner, repo, token, sha });
     if (checkRuns.length === 0) {
         // No checks for this sha
         core.debug(`No checks for owner: ${owner}, repo: ${repo} and sha: ${sha}`);
@@ -13406,6 +13404,11 @@ const checkEvent = (eventName) => {
         throw new Error(`${eventName} is not a valid event.`);
     }
 };
+const checkJobs = (includeJobs, excludeJobs) => {
+    if (includeJobs.length > 0 && excludeJobs.length > 0) {
+        throw new Error("Only one of includeJobs and excludeJobs is allowed!");
+    }
+};
 const writeOutput = (hasDiff) => {
     const result = hasDiff ? "true" : "false";
     core.setOutput("hasDiff", result);
@@ -13419,6 +13422,7 @@ const run = async () => {
     try {
         const { headSha, eventName, filters, token, pullNumber, owner, repo, includeJobs, excludeJobs } = context_1.context;
         checkEvent(eventName);
+        checkJobs(includeJobs, excludeJobs);
         let hasDiff = await (0, diff_1.hasBranchDiff)({ filters, token, pullNumber, owner, repo });
         if (!hasDiff) {
             // This PR doesn't have a change
@@ -13439,7 +13443,7 @@ const run = async () => {
             excludeJobs,
             commitShas
         });
-        if (lastChecksPassedSha === undefined) {
+        if (!lastChecksPassedSha) {
             // This PR has changed files but doesn't have any specified checks passed
             writeOutput(true);
             return;
@@ -13448,8 +13452,9 @@ const run = async () => {
         writeOutput(hasDiff);
     }
     catch (error) {
+        core.debug(`Failed to check diff. Error: ${JSON.stringify(error)}`);
         if (error instanceof Error) {
-            core.setFailed(error.message);
+            core.setFailed(error);
         }
     }
 };

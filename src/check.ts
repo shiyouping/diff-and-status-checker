@@ -1,10 +1,40 @@
 import * as core from "@actions/core";
 import { getOctokit } from "@actions/github";
+import * as octokitPlugin from "@octokit/plugin-rest-endpoint-methods";
 
-const checkJobs = (includeJobs: string[], excludeJobs: string[]): void => {
-  if (includeJobs.length > 0 && excludeJobs.length > 0) {
-    throw new Error("Only one of includeJobs and excludeJobs is allowed!");
+const listChecks = async ({
+  owner,
+  repo,
+  token,
+  sha
+}: {
+  owner: string;
+  repo: string;
+  token: string;
+  sha: string;
+}): Promise<octokitPlugin.RestEndpointMethodTypes["checks"]["listForRef"]["response"]["data"]["check_runs"]> => {
+  core.debug(`Getting checks for owner: ${owner}, repo: ${repo} and ref: ${sha}`);
+
+  const checkRuns = [];
+  const octokit = getOctokit(token);
+  const responses = octokit.paginate.iterator(octokit.rest.checks.listForRef, { owner, repo, ref: sha, per_page: 100 });
+
+  for await (const response of responses) {
+    core.debug(`Check runs response: ${JSON.stringify(response)}`);
+
+    if (response.status !== 200) {
+      throw new Error(`Failed to list checks. HTTP status code: ${response.status}`);
+    }
+
+    for (const checkRun of response.data) {
+      core.debug(`Check run: ${JSON.stringify(checkRun)}`);
+      checkRuns.push(checkRun);
+    }
   }
+
+  core.debug(`All check runs: ${JSON.stringify(checkRuns)}`);
+
+  return checkRuns;
 };
 
 const areChecksPassed = async ({
@@ -22,30 +52,7 @@ const areChecksPassed = async ({
   includeJobs: string[];
   excludeJobs: string[];
 }): Promise<boolean> => {
-  checkJobs(includeJobs, excludeJobs);
-
-  core.debug(`Getting checks for owner: ${owner}, repo: ${repo} and ref: ${sha}`);
-  const octokit = getOctokit(token);
-
-  const responses = octokit.paginate.iterator(octokit.rest.checks.listForRef, { owner, repo, ref: sha, per_page: 100 });
-
-  let checkRuns = [];
-
-  for await (const response of responses) {
-    core.debug(`Check runs response: ${JSON.stringify(response)}`);
-
-    if (response.status !== 200) {
-      throw new Error(`Failed to list checks. HTTP status code: ${response.status}`);
-    }
-
-    for (const checkRun of response.data) {
-      core.debug(`Check run: ${JSON.stringify(checkRun)}`);
-      checkRuns.push(checkRun);
-    }
-  }
-
-  core.debug(`All check runs: ${JSON.stringify(checkRuns)}`);
-
+  let checkRuns = await listChecks({ owner, repo, token, sha });
   if (checkRuns.length === 0) {
     // No checks for this sha
     core.debug(`No checks for owner: ${owner}, repo: ${repo} and sha: ${sha}`);

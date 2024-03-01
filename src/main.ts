@@ -14,6 +14,12 @@ const checkEvent = (eventName: string): void => {
   }
 };
 
+const checkJobs = (includeJobs: string[], excludeJobs: string[]): void => {
+  if (includeJobs.length > 0 && excludeJobs.length > 0) {
+    throw new Error("Only one of includeJobs and excludeJobs is allowed!");
+  }
+};
+
 const writeOutput = (hasDiff: boolean): void => {
   const result = hasDiff ? "true" : "false";
   core.setOutput("hasDiff", result);
@@ -28,6 +34,7 @@ export const run = async (): Promise<void> => {
   try {
     const { headSha, eventName, filters, token, pullNumber, owner, repo, includeJobs, excludeJobs } = context;
     checkEvent(eventName);
+    checkJobs(includeJobs, excludeJobs);
 
     let hasDiff = await hasBranchDiff({ filters, token, pullNumber, owner, repo });
     if (!hasDiff) {
@@ -52,7 +59,7 @@ export const run = async (): Promise<void> => {
       commitShas
     });
 
-    if (lastChecksPassedSha === undefined) {
+    if (!lastChecksPassedSha) {
       // This PR has changed files but doesn't have any specified checks passed
       writeOutput(true);
       return;
@@ -61,8 +68,9 @@ export const run = async (): Promise<void> => {
     hasDiff = await hasDiffBetween(lastChecksPassedSha, headSha, filters);
     writeOutput(hasDiff);
   } catch (error) {
+    core.debug(`Failed to check diff. Error: ${JSON.stringify(error)}`);
     if (error instanceof Error) {
-      core.setFailed(error.message);
+      core.setFailed(error);
     }
   }
 };
