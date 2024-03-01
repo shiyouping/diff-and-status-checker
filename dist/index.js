@@ -13163,13 +13163,13 @@ const getCommitShas = async ({ owner, repo, pullNumber, token }) => {
                 shas.push(commit.sha);
             }
         }
-        core.debug(`Commit shas for the pull request: ${["\n", ...shas].join("\n")}`);
+        core.debug(`Commit shas for the pull request: ${["", ...shas].join("\n")}`);
         // Start from the most recent commit
         shas.reverse();
         // Remove the most recent commit, because this is always
         // the commit that triggers this pull request workflow
         shas.shift();
-        core.info(`All commit shas except the latest one: ${["\n", ...shas].join("\n")}`);
+        core.info(`All commit shas except the latest one: ${["", ...shas].join("\n")}`);
         return shas;
     }
     finally {
@@ -13302,12 +13302,12 @@ const listChangedFiles = async ({ owner, repo, pullNumber, token }) => {
             changedFiles.push(change.filename);
         }
     }
-    core.info(`Changed files for the pull request: ${["\n", ...changedFiles].join("\n")}`);
+    core.info(`Changed files for the pull request: ${["", ...changedFiles].join("\n")}`);
     return changedFiles;
 };
 const isMatched = (paths, patterns) => {
-    core.debug(`paths: ${["\n", ...paths].join("\n")}`);
-    core.debug(`patterns: ${["\n", ...patterns].join("\n")}`);
+    core.debug(`paths: ${["", ...paths].join("\n")}`);
+    core.debug(`patterns: ${["", ...patterns].join("\n")}`);
     if (paths.length === 0) {
         return false;
     }

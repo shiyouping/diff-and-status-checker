@@ -50,13 +50,13 @@ const listChangedFiles = async ({
     }
   }
 
-  core.info(`Changed files for the pull request: ${["\n", ...changedFiles].join("\n")}`);
+  core.info(`Changed files for the pull request: ${["", ...changedFiles].join("\n")}`);
   return changedFiles;
 };
 
 const isMatched = (paths: string[], patterns: string[]): boolean => {
-  core.debug(`paths: ${["\n", ...paths].join("\n")}`);
-  core.debug(`patterns: ${["\n", ...patterns].join("\n")}`);
+  core.debug(`paths: ${["", ...paths].join("\n")}`);
+  core.debug(`patterns: ${["", ...patterns].join("\n")}`);
 
   if (paths.length === 0) {
     return false;
