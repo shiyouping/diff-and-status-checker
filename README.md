@@ -59,6 +59,8 @@ This action is only applicable to `pull_request` event:
 
 ## Algorithm
 
+If there are no changed files included in the `filters` for a pull request, the output is `false`; otherwise this action will detect changed files based on the incremental changes since the last commit that passes the checks that are included in `includeJobs` but not in `excludeJobs`.
+
 This action will retrieve all the commits that belong to a pull request, and check every single commit starting from the most recent one in reverse order. If the commit has jobs included in `includeJobs` but not in `excludeJobs`, and the conclusion of each job is one of `neutral`, `success` and `skipped`, then this action will mark the current commit as `base` commit, and use `git diff --name-only ${base} ${head}` to calculate the differences in between. If the differences are included in the `filters`, then this action will return `true`, otherwise `false`.
 
 ## Note
