@@ -1,7 +1,7 @@
 {
   "name": "diff-and-status-checker",
   "description": "A GitHub action to check if there are any differences in the pull request since last passed checks.",
-  "version": "0.0.4",
+  "version": "0.1.0",
   "private": false,
   "license": "Apache",
   "author": "ricky.shiyouping@gmail.com",

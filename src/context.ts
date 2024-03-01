@@ -28,12 +28,12 @@ const context: Context = {
   pullNumber: github.context.payload.number,
   owner: github.context.repo.owner,
   repo: github.context.repo.repo,
-  token: core.getInput("token", {required: false}),
-  filters: parseArray(core.getInput("filters", {required: false})),
-  includeJobs: parseArray(core.getInput("includeJobs", {required: false})),
-  excludeJobs: parseArray(core.getInput("excludeJobs", {required: false}))
+  token: core.getInput("token", { required: false }),
+  filters: parseArray(core.getInput("filters", { required: false })),
+  includeJobs: parseArray(core.getInput("includeJobs", { required: false })),
+  excludeJobs: parseArray(core.getInput("excludeJobs", { required: false }))
 } as const;
 
 core.info(`Context: ${JSON.stringify(context)}`);
 
-export {context};
+export { context };

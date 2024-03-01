@@ -1,12 +1,13 @@
-import {findLastChecksPassedSha} from "src/check";
-import {getShas} from "src/commit";
-import {context} from "src/context";
-import {hasDiff} from "src/diff";
+import { findLastChecksPassedSha } from "src/check";
+import { getCommitShas } from "src/commit";
+import { context } from "src/context";
+import { hasBranchDiff, hasDiffBetween } from "src/diff";
 
 import * as core from "@actions/core";
 
 const checkEvent = (eventName: string): void => {
-  const validEvents = ["pull_request", "pull_request_review", "pull_request_review_comment", "pull_request_target"];
+  // May add new events in the future
+  const validEvents = ["pull_request"];
 
   if (!validEvents.includes(eventName)) {
     throw new Error(`${eventName} is not a valid event.`);
@@ -25,20 +26,40 @@ const writeOutput = (hasDiff: boolean): void => {
  */
 export const run = async (): Promise<void> => {
   try {
-    const {baseSha, headSha, eventName, filters} = context;
+    const { headSha, eventName, filters, token, pullNumber, owner, repo, includeJobs, excludeJobs } = context;
     checkEvent(eventName);
 
-    let hasChanges = await hasDiff(baseSha, headSha, []);
-    if (!hasChanges) {
+    let hasDiff = await hasBranchDiff({ filters, token, pullNumber, owner, repo });
+    if (!hasDiff) {
       // This PR doesn't have a change
-      writeOutput(hasChanges);
+      writeOutput(false);
       return;
     }
 
-    const shas = await getShas();
-    let lastChecksPassedSha = await findLastChecksPassedSha(shas, baseSha);
-    hasChanges = await hasDiff(lastChecksPassedSha, headSha, filters);
-    writeOutput(hasChanges);
+    const commitShas = await getCommitShas({
+      owner,
+      repo,
+      pullNumber,
+      token
+    });
+
+    let lastChecksPassedSha = await findLastChecksPassedSha({
+      owner,
+      repo,
+      token,
+      includeJobs,
+      excludeJobs,
+      commitShas
+    });
+
+    if (lastChecksPassedSha === undefined) {
+      // This PR has changed files but doesn't have any specified checks passed
+      writeOutput(true);
+      return;
+    }
+
+    hasDiff = await hasDiffBetween(lastChecksPassedSha, headSha, filters);
+    writeOutput(hasDiff);
   } catch (error) {
     if (error instanceof Error) {
       core.setFailed(error.message);
