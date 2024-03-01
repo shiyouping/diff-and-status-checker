@@ -24,8 +24,8 @@ jobs:
         with:
           filters: |
             src/*
-            __tests__/*
             .github/workflows/*
+            __tests__/*
           includeJobs: |
             Action Test
 
