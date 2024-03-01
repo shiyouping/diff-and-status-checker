@@ -23,13 +23,6 @@ jobs:
       - name: Test Action
         id: test-action
         uses: ./
-        with:
-          filters: |
-            src/*
-            __tests__/*
-            .github/workflows/*
-          includeJobs: |
-            Action Test
 
       - name: Print Output
         id: output
