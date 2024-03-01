@@ -10,12 +10,7 @@ When you are waiting for your pull request to be approved and merged, some commi
 
 ## Scope
 
-This action is only applicable to pull request events:
-
-- pull_request
-- pull_request_review
-- pull_request_review_comment
-- pull_request_target
+This action is only applicable to `pull_request` event:
 
 ## Usage
 
