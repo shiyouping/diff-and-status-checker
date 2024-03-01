@@ -40,7 +40,7 @@ export const getCommitShas = async ({
       }
     }
 
-    core.debug(`Commit shas for the pull request: ${shas.join("\n")}`);
+    core.debug(`Commit shas for the pull request: ${["\n", ...shas].join("\n")}`);
 
     // Start from the most recent commit
     shas.reverse();
@@ -49,7 +49,7 @@ export const getCommitShas = async ({
     // the commit that triggers this pull request workflow
     shas.shift();
 
-    core.info(`All commit shas except the latest one: ${shas.join("\n")}`);
+    core.info(`All commit shas except the latest one: ${["\n", ...shas].join("\n")}`);
     return shas;
   } finally {
     core.info("");
