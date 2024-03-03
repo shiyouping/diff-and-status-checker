@@ -1,7 +1,7 @@
 {
   "name": "diff-and-status-checker",
   "description": "A GitHub action to check if there are any differences in the pull request since last passed checks.",
-  "version": "0.0.3",
+  "version": "0.1.1",
   "private": false,
   "license": "Apache",
   "author": "ricky.shiyouping@gmail.com",
@@ -44,12 +44,12 @@
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",
-    "@types/node": "^20.11.19",
+    "@types/node": "^20.11.20",
     "@types/picomatch": "^2.3.3",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "@vercel/ncc": "^0.38.1",
-    "eslint": "^8.56.0",
+    "eslint": "^8.57.0",
     "eslint-plugin-github": "^4.10.1",
     "eslint-plugin-jest": "^27.9.0",
     "eslint-plugin-jsonc": "^2.13.0",

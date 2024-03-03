@@ -1,22 +1,29 @@
 import { findLastChecksPassedSha } from "src/check";
-import { getShas } from "src/commit";
+import { getCommitShas } from "src/commit";
 import { context } from "src/context";
-import { hasDiff } from "src/diff";
+import { hasBranchDiff, hasDiffBetween } from "src/diff";
 
 import * as core from "@actions/core";
 
 const checkEvent = (eventName: string): void => {
-  const validEvents = ["pull_request", "pull_request_review", "pull_request_review_comment", "pull_request_target"];
+  // May add new events in the future
+  const validEvents = ["pull_request"];
 
   if (!validEvents.includes(eventName)) {
     throw new Error(`${eventName} is not a valid event.`);
   }
 };
 
+const checkJobs = (includeJobs: string[], excludeJobs: string[]): void => {
+  if (includeJobs.length > 0 && excludeJobs.length > 0) {
+    throw new Error("Only one of includeJobs and excludeJobs is allowed!");
+  }
+};
+
 const writeOutput = (hasDiff: boolean): void => {
   const result = hasDiff ? "true" : "false";
   core.setOutput("hasDiff", result);
-  core.info(`Wrote output. hasDiff: ${result}`);
+  core.info(`Output is hasDiff: ${result}`);
 };
 
 /**
@@ -24,17 +31,46 @@ const writeOutput = (hasDiff: boolean): void => {
  * @returns {Promise<void>} Resolves when the action is complete.
  */
 export const run = async (): Promise<void> => {
-  const { baseSha, headSha, eventName, filters } = context;
-  checkEvent(eventName);
-
   try {
-    const shas = await getShas();
-    let lastChecksPassedSha = await findLastChecksPassedSha(shas, baseSha);
-    const hasChanges = await hasDiff(lastChecksPassedSha, headSha, filters);
-    writeOutput(hasChanges);
+    const { headSha, eventName, filters, token, pullNumber, owner, repo, includeJobs, excludeJobs } = context;
+    checkEvent(eventName);
+    checkJobs(includeJobs, excludeJobs);
+
+    let hasDiff = await hasBranchDiff({ filters, token, pullNumber, owner, repo });
+    if (!hasDiff) {
+      // This PR doesn't have a change
+      writeOutput(false);
+      return;
+    }
+
+    const commitShas = await getCommitShas({
+      owner,
+      repo,
+      pullNumber,
+      token
+    });
+
+    let lastChecksPassedSha = await findLastChecksPassedSha({
+      owner,
+      repo,
+      token,
+      includeJobs,
+      excludeJobs,
+      commitShas
+    });
+
+    if (!lastChecksPassedSha) {
+      // This PR has changed files but doesn't have any specified checks passed
+      writeOutput(true);
+      return;
+    }
+
+    hasDiff = await hasDiffBetween(lastChecksPassedSha, headSha, filters);
+    writeOutput(hasDiff);
   } catch (error) {
+    core.debug(`Failed to check diff. Error: ${JSON.stringify(error)}`);
     if (error instanceof Error) {
-      core.setFailed(error.message);
+      core.setFailed(error);
     }
   }
 };

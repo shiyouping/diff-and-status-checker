@@ -27,8 +27,9 @@ jobs:
           filters: |
             src/*
             __tests__/*
+            .github/workflows/*
           includeJobs: |
-            Health Check
+            Action Test
 
       - name: Print Output
         id: output
