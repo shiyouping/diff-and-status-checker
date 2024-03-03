@@ -9,13 +9,13 @@
     "text",
     "lcov"
   ],
-  "modulePaths": [
-    "<rootDir>",
-    "<rootDir>/src/"
-  ],
   "moduleFileExtensions": [
     "js",
     "ts"
+  ],
+  "modulePaths": [
+    "<rootDir>",
+    "<rootDir>/src/"
   ],
   "preset": "ts-jest",
   "testEnvironment": "node",
