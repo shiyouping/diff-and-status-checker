@@ -9,14 +9,15 @@
     "newLine": "lf",
     "noImplicitAny": true,
     "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDirs": [
+      "./src"
+    ],
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
     "target": "ES2022"
   },
   "exclude": [
-    "./__tests__",
     "./.github",
     "./badges",
     "./coverage",
@@ -24,5 +25,9 @@
     "./node_modules",
     "./script",
     "*.json"
+  ],
+  "include": [
+    "src/**/*",
+    "test/**/*"
   ]
 }

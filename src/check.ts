@@ -99,6 +99,15 @@ const areChecksPassed = async ({
   );
 };
 
+export type FindLastChecksPassedShaParams = {
+  owner: string;
+  repo: string;
+  token: string;
+  includeJobs: string[];
+  excludeJobs: string[];
+  commitShas: string[];
+};
+
 export const findLastChecksPassedSha = async ({
   owner,
   repo,
@@ -106,14 +115,7 @@ export const findLastChecksPassedSha = async ({
   includeJobs,
   excludeJobs,
   commitShas
-}: {
-  owner: string;
-  repo: string;
-  token: string;
-  includeJobs: string[];
-  excludeJobs: string[];
-  commitShas: string[];
-}): Promise<string | undefined> => {
+}: FindLastChecksPassedShaParams): Promise<string | undefined> => {
   core.startGroup("Finding the last commit that passed the specified checks...");
 
   try {

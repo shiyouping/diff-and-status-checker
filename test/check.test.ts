@@ -1,29 +1,30 @@
-import * as actionContext from "../src/context";
-import { findLastChecksPassedSha } from "../src/check";
+// import * as core from "@actions/core";
+// import * as github from "@actions/github";
 
-import { mock } from "jest-mock-extended";
-import * as core from "@actions/core";
-import * as github from "@actions/github";
+// import { findLastChecksPassedSha, FindLastChecksPassedShaParams } from "src/check";
 
-jest.mock("../src/context");
+// Mock the GitHub Actions core library
+// let debugMock: jest.SpiedFunction<typeof core.debug>;
+// let errorMock: jest.SpiedFunction<typeof core.error>;
+// let getInputMock: jest.SpiedFunction<typeof core.getInput>;
+// let setFailedMock: jest.SpiedFunction<typeof core.setFailed>;
+// let setOutputMock: jest.SpiedFunction<typeof core.setOutput>;
+// let getOctokitMock: jest.SpiedFunction<typeof github.getOctokit>;
 
 describe("check.ts", () => {
-  actionContext.context;
-
-  // const contextMock = mock<actionContext.Context>();
-  // Object.assign(contextMock, {
-  //   owner: "owner",
-  //   repo: "repo",
-  //   token: "token",
-  //   includeJobs: ["a", "b"],
-  //   excludeJobs: ["a", "b"]
-  // });
-
   beforeEach(() => {
     jest.clearAllMocks();
+
+    // debugMock = jest.spyOn(core, "debug").mockImplementation();
+    // errorMock = jest.spyOn(core, "error").mockImplementation();
+    // getInputMock = jest.spyOn(core, "getInput").mockImplementation();
+    // setFailedMock = jest.spyOn(core, "setFailed").mockImplementation();
+    // setOutputMock = jest.spyOn(core, "setOutput").mockImplementation();
   });
 
-  test("no name", () => {
-    findLastChecksPassedSha(["1", "2"], "ref");
+  test("should pass without any jobs", () => {
+    // When
+    // Given
+    // Then
   });
 });
