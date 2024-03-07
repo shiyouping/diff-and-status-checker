@@ -114,7 +114,7 @@ export const findLastChecksPassedSha = async ({
   excludeJobs: string[];
   commitShas: string[];
 }): Promise<string | undefined> => {
-  core.startGroup("Finding the last commit that passed the specified checks...");
+  core.startGroup("Finding      the last commit that passed the specified checks...");
 
   try {
     for (const sha of commitShas) {
