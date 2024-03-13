@@ -84,8 +84,8 @@ steps:
     uses: shiyouping/diff-and-status-checker@v0.0.3
     with:
       filters: |
-        src/*
-        test/*
+        src/**
+        test/**
       includeJobs: |
         Lint
         Build
