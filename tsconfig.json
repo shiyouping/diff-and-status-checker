@@ -24,10 +24,10 @@
     "./dist",
     "./node_modules",
     "./script",
+    "./test",
     "*.json"
   ],
   "include": [
-    "src/**/*",
-    "test/**/*"
+    "src/**/*"
   ]
 }
