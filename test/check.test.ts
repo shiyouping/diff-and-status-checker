@@ -1,29 +1,36 @@
-// import * as core from "@actions/core";
-// import * as github from "@actions/github";
+import * as core from "@actions/core";
+import * as github from "@actions/github";
+import { Octokit } from "@octokit/rest";
+import { Api } from "@octokit/plugin-rest-endpoint-methods/dist-types/types";
+import { PaginateInterface } from "@octokit/plugin-paginate-rest";
 
-// import { findLastChecksPassedSha, FindLastChecksPassedShaParams } from "src/check";
+import { mock } from "jest-mock-extended";
+import { findLastChecksPassedSha, FindLastChecksPassedShaParams } from "src/check";
 
 // Mock the GitHub Actions core library
-// let debugMock: jest.SpiedFunction<typeof core.debug>;
-// let errorMock: jest.SpiedFunction<typeof core.error>;
-// let getInputMock: jest.SpiedFunction<typeof core.getInput>;
-// let setFailedMock: jest.SpiedFunction<typeof core.setFailed>;
-// let setOutputMock: jest.SpiedFunction<typeof core.setOutput>;
-// let getOctokitMock: jest.SpiedFunction<typeof github.getOctokit>;
+let mockDebug: jest.SpiedFunction<typeof core.debug>;
+let mockInfo: jest.SpiedFunction<typeof core.info>;
+let mockStartGroup: jest.SpiedFunction<typeof core.startGroup>;
+let mockEndGroup: jest.SpiedFunction<typeof core.endGroup>;
+let mockGetOctokit: jest.SpiedFunction<typeof github.getOctokit>;
 
 describe("check.ts", () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    // debugMock = jest.spyOn(core, "debug").mockImplementation();
-    // errorMock = jest.spyOn(core, "error").mockImplementation();
-    // getInputMock = jest.spyOn(core, "getInput").mockImplementation();
-    // setFailedMock = jest.spyOn(core, "setFailed").mockImplementation();
-    // setOutputMock = jest.spyOn(core, "setOutput").mockImplementation();
+    mockDebug = jest.spyOn(core, "debug").mockImplementation();
+    mockInfo = jest.spyOn(core, "info").mockImplementation();
+    mockStartGroup = jest.spyOn(core, "startGroup").mockImplementation();
+    mockEndGroup = jest.spyOn(core, "endGroup").mockImplementation();
+    mockGetOctokit = jest.spyOn(github, "getOctokit").mockImplementation();
   });
 
-  test("should pass without any jobs", () => {
+  test("should pass without any checks", () => {
     // When
+    const mockOctokit = mock<Octokit & Api & { paginate: PaginateInterface }>();
+    mockOctokit.paginate.iterator.mockReturnValue(null);
+    mockGetOctokit.mockReturnValue(mockOctokit);
+
     // Given
     // Then
   });
