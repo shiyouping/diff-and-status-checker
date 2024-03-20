@@ -18,7 +18,7 @@ This action is only applicable to `pull_request` event:
 
 ```yaml
 # Use an appropriate version
-- uses: shiyouping/diff-and-status-checker@0.0.3
+- uses: shiyouping/diff-and-status-checker@0.1.1
   with:
     # Optional. Default: ${{ github.token }}
     # The GitHub token used to create an authenticated client.
@@ -81,7 +81,7 @@ steps:
 
   - name: Check diff and status
     id: check-diff-and-status
-    uses: shiyouping/diff-and-status-checker@v0.0.3
+    uses: shiyouping/diff-and-status-checker@v0.1.1
     with:
       filters: |
         src/**
