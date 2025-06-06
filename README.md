@@ -6,7 +6,7 @@ A GitHub action to check if there are any differences in the pull request since 
 
 ## Motivation
 
-When you are waiting for your pull request to be approved and merged, some commit from other people or teams that doesn't change your source code triggers some of the GitHub action workflows to run again. It may take a while to complete the workflows. Then you have to get another approval before merge. This issue becomes extremely painful when you work on a big project or a mono repo that has hundreds of projects. This GitHub action is here to solve this pain point for you. It will look for all changes in the `designated paths` from the most recent commit that passed only the `specified checks` you care about, e.g. unit tests, to the latest commit in a pull request. Then you can make a decision what to do if there are changes or not.
+When you are waiting for your pull request to be approved and merged, some commit from other people that doesn't change your source code triggers your workflows to run again. It may take a while to complete the workflows. Then you have to get another approval before merge. This issue becomes extremely painful when you work on a big project or a mono repo that has hundreds of projects. This GitHub action is here to solve this pain point for you. It will look for all changes in the `designated paths` from the most recent commit that passed only the `specified checks` you care about, e.g. unit tests, to the latest commit in a pull request. Then you can make a decision what to do if there are changes.
 
 ## Scope
 
@@ -36,6 +36,8 @@ This action is only applicable to `pull_request` event:
     # If specified, only those jobs in the list will be checked; otherwise all
     # will be checked. Only one of `includeJobs` and `excludeJobs` is allowed.
     #
+    # If a job calls another reusable job, only the top level job name is required.
+    #
     # Note that if a commit has no workflow jobs specified in this list, it will
     # be seen as `FAILED`, and the action will continue to check its previous commits.
     includeJobs:
@@ -44,6 +46,8 @@ This action is only applicable to `pull_request` event:
     # A list of GitHub workflow job names delimited by comma or in a new line. If
     # specified, those jobs in the list will be skipped; otherwise none will be
     # skipped. Only one of `includeJobs` and `excludeJobs` is allowed.
+    #
+    # If a job calls another reusable job, only the top level job name is required.
     #
     # Note that if a commit's workflow jobs are all covered by this list, it will be
     # seen as `PASSED`, and the action will use the SHA of this commit to calculate

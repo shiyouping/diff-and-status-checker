@@ -65,7 +65,7 @@ const areChecksPassed = async ({
         `Check run head SHA: ${checkRun.head_sha}, name: ${checkRun.name}, status: ${checkRun.status}, conclusion: ${checkRun.conclusion}`
       );
 
-      return includeJobs.includes(checkRun.name);
+      return includeJobs.some(includeJob => checkRun.name.includes(includeJob));
     });
 
     if (!tmp.length) {
@@ -82,7 +82,7 @@ const areChecksPassed = async ({
         `Check run head SHA: ${checkRun.head_sha}, name: ${checkRun.name}, status: ${checkRun.status}, conclusion: ${checkRun.conclusion}`
       );
 
-      return !excludeJobs.includes(checkRun.name);
+      return excludeJobs.every(excludeJob => !checkRun.name.includes(excludeJob));
     });
 
     if (!tmp.length) {
