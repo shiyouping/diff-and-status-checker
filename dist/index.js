@@ -13055,7 +13055,7 @@ const areChecksPassed = async ({ owner, repo, token, sha, includeJobs, excludeJo
     if (includeJobs.length) {
         const tmp = checkRuns.filter(checkRun => {
             core.info(`Check run head SHA: ${checkRun.head_sha}, name: ${checkRun.name}, status: ${checkRun.status}, conclusion: ${checkRun.conclusion}`);
-            return includeJobs.includes(checkRun.name);
+            return includeJobs.some(includeJob => checkRun.name.includes(includeJob));
         });
         if (!tmp.length) {
             core.debug(`SHA: ${sha} has no check job specified by includeJobs: ${JSON.stringify(includeJobs)}`);
@@ -13066,7 +13066,7 @@ const areChecksPassed = async ({ owner, repo, token, sha, includeJobs, excludeJo
     if (excludeJobs.length) {
         const tmp = checkRuns.filter(checkRun => {
             core.debug(`Check run head SHA: ${checkRun.head_sha}, name: ${checkRun.name}, status: ${checkRun.status}, conclusion: ${checkRun.conclusion}`);
-            return !excludeJobs.includes(checkRun.name);
+            return excludeJobs.every(excludeJob => !checkRun.name.includes(excludeJob));
         });
         if (!tmp.length) {
             core.debug(`SHA: ${sha} has check jobs all specified by excludeJobs: ${JSON.stringify(excludeJobs)}`);
