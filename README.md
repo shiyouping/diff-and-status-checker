@@ -1,4 +1,4 @@
-# Diff and Status Checker for Pull Request
+# Diff and Status Checker for Pull Requests
 
 A GitHub action to check if there are any differences in the pull request since last passed checks.
 
